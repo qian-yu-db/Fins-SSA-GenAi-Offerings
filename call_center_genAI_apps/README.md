@@ -4,7 +4,7 @@ This series of notebooks, we shows how Generative AI (GenAI) can be used to unlo
 
 The goal is to give Databricks’ customers a blueprint to start a POC for more responsive, efficient, and customer-centric call center operation that can improve customer satisfaction, decrease turnaround times, and contribute positively to the overall business performance.
 
-# Application 1. Extract Intelligence from raw call center transcripts using RAG
+# Application 1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
 
 ## Architecture
 
