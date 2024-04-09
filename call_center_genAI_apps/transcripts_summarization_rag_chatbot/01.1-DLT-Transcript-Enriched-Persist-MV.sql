@@ -4,9 +4,15 @@
 -- MAGIC # Persist DLT Materialized View
 -- MAGIC
 -- MAGIC To easily support DLT / UC / ML during the preview, we temporary recopy the final DLT view to another UC table
--- MAGIC * Currently DLT Materialized View can only be read on shared clusters
+-- MAGIC
+-- MAGIC * Why: Currently Delta Live Table generated Materialized View can only be read on shared clusters
+-- MAGIC * How: Please run this notebook with a shared cluster
 
 -- COMMAND ----------
 
-CREATE OR REPLACE TABLE fins_genai.speech.transcript_enriched_ml 
-AS SELECT * FROM fins_genai.speech.transcript_enriched;
+-- MAGIC %run ../config
+
+-- COMMAND ----------
+
+CREATE OR REPLACE TABLE transcript_enriched_ml 
+AS SELECT * FROM transcript_enriched;

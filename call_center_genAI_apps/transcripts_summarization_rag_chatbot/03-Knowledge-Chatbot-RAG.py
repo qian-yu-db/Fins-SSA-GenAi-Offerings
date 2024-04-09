@@ -65,6 +65,15 @@ vsc = VectorSearchClient()
 
 # COMMAND ----------
 
+# Check if the endpoint already exist otherwise create an endpoint
+if not endpoint_exists(vsc, VECTOR_SEARCH_ENDPOINT_NAME):
+    vsc.create_endpoint(name=VECTOR_SEARCH_ENDPOINT_NAME, endpoint_type="STANDARD")
+
+wait_for_vs_endpoint_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME)
+print(f"Endpoint named {VECTOR_SEARCH_ENDPOINT_NAME} is ready.")
+
+# COMMAND ----------
+
 # DBTITLE 1,If the vector store endpoint already exist, we do not need to recreate
 index_name = "customer_service_vs_index"
 vs_index_fullname = f"{catalog}.{db}.{index_name}"
@@ -81,10 +90,14 @@ if not index_exists(vsc=vsc, endpoint_name=VECTOR_SEARCH_ENDPOINT_NAME, index_fu
     embedding_source_column='summary', #The column containing our text
     embedding_model_endpoint_name='databricks-bge-large-en' #The embedding endpoint used to create the embeddings
   )
+  wait_for_index_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname)
 else: 
   #Trigger a sync to update our vs content with the new data saved in the table
   print(f"The vector search index endpoint {VECTOR_SEARCH_ENDPOINT_NAME} is already exists, we will perform a sync")
+  wait_for_index_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname)
   vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).sync()
+
+print(f"index {vs_index_fullname} on table {source_table_fullname} is ready")
 
 # COMMAND ----------
 

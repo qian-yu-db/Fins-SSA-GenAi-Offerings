@@ -6,6 +6,13 @@
 # MAGIC * Perform cleaning and transformation of raw transcript table 
 # MAGIC * Perform cleaning and transformation of raw policy table
 # MAGIC * Join the transcripts and policy tables with policy number
+# MAGIC
+# MAGIC ## Setting up Delta Live Table 
+# MAGIC * Refer to [Python Document](https://docs.databricks.com/en/delta-live-tables/python-ref.html)
+# MAGIC * Refer to [Tutorial](https://docs.databricks.com/en/delta-live-tables/tutorial-pipelines.html)
+# MAGIC
+# MAGIC
+# MAGIC ## Please Update `catalog` and `schema` name in below cell
 
 # COMMAND ----------
 
@@ -14,8 +21,8 @@ from pyspark.sql import functions as F
 from pyspark.sql.functions import lit, concat, col
 from pyspark.sql import types as T
 
-catalog = "fins_genai"
-db = "speech"
+catalog = "qyu"
+db = "test"
 transcript_table = "customer_transcripts"
 volume_name_policies = "volume_policies"
 volume_name_speech = "volume_speech"
@@ -58,7 +65,7 @@ def raw_transcript():
 # MAGIC %md
 # MAGIC ## Silver: 
 # MAGIC
-# MAGIC * `policy`: Perform data cleaning and data type changes
+# MAGIC * `policy_v1`: Perform data cleaning and data type changes
 # MAGIC * `transcript`: Perform data cleaning, filtering
 
 # COMMAND ----------
