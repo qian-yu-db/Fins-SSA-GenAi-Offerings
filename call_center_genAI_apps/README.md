@@ -1,31 +1,13 @@
 # Introduction
 
-This series of notebooks, we shows how Generative AI (GenAI) can be used to unlock the value of call center data, e.g. `.json` transcript data, `.wav` audio data leveraging Databricks' advanced GenAI capabilities.
+In the rapidly evolving Financial and Insurance industry, the ability to efficiently handle customer interactions is paramount. The call center, often the first point of contact for customers, plays a crucial role in shaping customer experiences and satisfaction levels. However, traditional call center operations often face challenges in terms of speed, efficiency, and accuracy, which can impact customer satisfaction and business outcomes. Many personas have a stake in deriving value from the call center data in audio or text form
+
+This series of notebooks, we shows how Generative AI (GenAI) can be used to unlock the value of call center data across the customer service lifecycle. Leveraging Databricks' advanced GenAI capabilities, the notebooks will focus on transforming various aspects of call center operations such as audio transcription, intelligent call routing, transcript summary and sentiment analysis, RAG (Retrieval Augmented Generation) knowledge chatbot.
 
 The goal is to give Databricks’ customers a blueprint to start a POC for more responsive, efficient, and customer-centric call center operation that can improve customer satisfaction, decrease turnaround times, and contribute positively to the overall business performance.
 
-# Application 1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
 
-## Architecture
+# Applications:
 
-![image](../imgs/transcripts_summarization_rag.png)
-
-
-## Notebooks
-
-### 0. Download Dataset and setup unity catalog schema & volume
-
-* 00-setup
-
-### 1. Data Ingestions with Delta Live Table
-
-* 01-DLT-Transcript-Policy
-* 01.1-DLT-Transcript-Enriched-Persist-MV
-
-### 2. Prompte Engineering with Databricks DBRX Fundation LLM
-
-* 02-Prompt-Engineering
-
-### 3. RAG Chatbot with Databricks DBRX Fundation LLM
-
-* 03-Knowledge-Chatbot-RAG
+1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
+2. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
