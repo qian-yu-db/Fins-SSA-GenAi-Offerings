@@ -1,15 +1,15 @@
-# Application. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
+# Application: Extract Intelligence from raw call center transcripts using RAG
 
 ## Architecture
 
 ![image](../../imgs/transcripts_summarization_rag.png)
 
-
 ## Please Follow the Steps Below:
 
 ### Introduction and Setup Environment
 
-  * Start with notebook **`Introduction`** for an overview of the PoC Template
+  * Use the notebook **`config`** to define the name of your preferred catalog, schema, and volume
+  * Then review notebook **`Introduction`** for an overview of the current PoC Template
   * Run notebook **`00-setup`** to create a catalog, schema, volume, and download dataset to the volume
 
 ### Step 1. Data Ingestions with Delta Live Table
