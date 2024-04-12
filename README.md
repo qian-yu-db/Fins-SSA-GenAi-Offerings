@@ -42,7 +42,7 @@ Clone this repo and add the repo to your Databricks Workspace. Refer to [Databri
 5. Most of notebook can run by click `Run/Run ALL` but some may require additional steps of using databricks UI so be sure to read the instruction
 
 
-# GenAI Resources
+# Resources
 
 * [Databricks Foundation Model](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/model-serving/foundation-models)
 * [Model Serving](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/model-serving/)
