@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![image](../imgs/transcripts_summarization_rag.png)
+![image](../../imgs/transcripts_summarization_rag.png)
 
 
 ## Notebooks
