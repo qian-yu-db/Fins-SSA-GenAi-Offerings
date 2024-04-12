@@ -5,21 +5,23 @@
 ![image](../../imgs/transcripts_summarization_rag.png)
 
 
-## Notebooks
+## Please Follow the Steps Below:
 
-### 0. Download Dataset and setup unity catalog schema & volume
+### Introduction and Setup Environment
 
-* 00-setup
+  * Start with notebook **`Introduction`** for an overview of the PoC Template
+  * Run notebook **`00-setup`** to create a catalog, schema, volume, and download dataset to the volume
 
-### 1. Data Ingestions with Delta Live Table
+### Step 1. Data Ingestions with Delta Live Table
 
-* 01-DLT-Transcript-Policy
-* 01.1-DLT-Transcript-Enriched-Persist-MV
+  * Create a Delta Live Table Pipeline using notebook **`01-DLT-Transcript-Policy`**, refer to the below imange for the example of the resulting pipeline. Please also refer to the [DLT pipeline tutorial](https://learn.microsoft.com/en-us/azure/databricks/delta-live-tables/tutorial-pipelines) on how to set up a DLT pipeline
+  ![image](../../imgs/DLT_transcript_enriched.png)
+  * Run notebook **`01.1-DLT-Transcript-Enriched-Persist-MV`** to create a copy of materialized view of the DLT from the previous step. This steps is needed to due the current [limitation](../../README.md#limitations) of DLT table
 
-### 2. Prompte Engineering with Databricks DBRX Fundation LLM
+### Step 2. Prompte Engineering with Databricks DBRX Fundation LLM
 
-* 02-Prompt-Engineering
+* Run notebook **`02-Prompt-Engineering`** to perform summarization and sentiment analysis task using prompt enginering in batch with the Databricks DBRX foundation model
 
-### 3. RAG Chatbot with Databricks DBRX Fundation LLM
+### Step 3. RAG Chatbot with Databricks DBRX Fundation LLM
 
-* 03-Knowledge-Chatbot-RAG
+* Run notebook **`03-Knowledge-Chatbot-RAG`** to create a vector search index using the result delta table of the previous notebook **`02-Prompt-Engineerin`**, we then build a RAG Chatbot with the Databricks DBRX foundation model using the vector search index as context. Lastly, we deploy the chat model to Databricks Model Serving Endpoint

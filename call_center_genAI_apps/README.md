@@ -1,4 +1,6 @@
-# Introduction
+# Call Center GenAI RAG
+
+## Introduction
 
 In the rapidly evolving Financial and Insurance industry, the ability to efficiently handle customer interactions is paramount. The call center, often the first point of contact for customers, plays a crucial role in shaping customer experiences and satisfaction levels. However, traditional call center operations often face challenges in terms of speed, efficiency, and accuracy, which can impact customer satisfaction and business outcomes. Many personas have a stake in deriving value from the call center data in audio or text form
 
@@ -7,7 +9,7 @@ This series of notebooks, we shows how Generative AI (GenAI) can be used to unlo
 The goal is to give Databricks’ customers a blueprint to start a POC for more responsive, efficient, and customer-centric call center operation that can improve customer satisfaction, decrease turnaround times, and contribute positively to the overall business performance.
 
 
-# Applications:
+## Templates
 
 1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
 2. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
