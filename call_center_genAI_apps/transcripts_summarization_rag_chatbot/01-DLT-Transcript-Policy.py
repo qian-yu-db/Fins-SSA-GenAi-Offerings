@@ -119,3 +119,13 @@ def transcript_enriched():
     )
     policy_cleaned = dlt.read("policy_v1")
     return transcript_renamed.join(policy_cleaned, on="POLICY_NO")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC Next Step, we make a copy of the Materialized View `transcript_enriched` use [Notebook 01.1-DLT-Transcript-Enriched-Persist-MV]($./01.1-DLT-Transcript-Enriched-Persist-MV)
+
+# COMMAND ----------
+
+

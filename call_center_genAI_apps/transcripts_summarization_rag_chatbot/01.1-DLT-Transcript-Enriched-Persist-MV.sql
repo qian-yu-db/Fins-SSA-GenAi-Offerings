@@ -16,3 +16,12 @@
 
 CREATE OR REPLACE TABLE transcript_enriched_ml 
 AS SELECT * FROM transcript_enriched;
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC Next Step, we go to [Notebook 02-Prompt-Engineering]($./02-Prompt-Engineering)
+
+-- COMMAND ----------
+
+

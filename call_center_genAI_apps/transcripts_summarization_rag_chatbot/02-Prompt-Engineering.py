@@ -156,3 +156,13 @@ display(transcript_df_with_summary)
 # MAGIC %sql
 # MAGIC ALTER TABLE customer_service_nlp SET TBLPROPERTIES (delta.enableChangeDataFeed = true);
 # MAGIC DESCRIBE EXTENDED customer_service_nlp
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC Next Step, we create a RAG Chatbot with [Notebook 03-Knowledge-Chatbot-RAG]($./03-Knowledge-Chatbot-RAG)
+
+# COMMAND ----------
+
+

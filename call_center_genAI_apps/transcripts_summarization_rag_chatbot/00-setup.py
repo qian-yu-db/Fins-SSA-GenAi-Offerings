@@ -96,3 +96,13 @@ if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or is_folder_empty(f"
                            path="/datasets/call_center_audio_transcripts")
 else:
     print("Data already existing. To clean up, run above cell with reset_all_date=True.")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
+# MAGIC Next Step: Create a DLT Pipeline with [Notebook 01-DLT-Tanscript-Policy]($./01-DLT-Transcript-Policy)
+
+# COMMAND ----------
+
+
