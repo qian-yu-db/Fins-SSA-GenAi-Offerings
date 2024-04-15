@@ -20,7 +20,7 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 | Input Data  | Model     | Tasks           | GenAI Use Case | Orchestration | Business Application | PoC Template     |
 |-------------|-----------|-----------------|----------------|--------------|----------------------|-------------------|
 | JSON Text Transcripts | Foundation LLM (e.g. DBRX) | Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Transcript RAG Apps](./call_center_genAI_apps/transcripts_summarization_rag_chatbot/) |
-| wav Audio | Foundation LLM (e.g. DBRX) | Speech Transcription, Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
+| wav Audio | Foundation LLM (e.g. DBRX) | Speech Transcription, Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
 | PDF Doc (machine generated) |           |           |                    |            |             |           |
 | PDF Doc (with tables) |           |           |                    |            |             |           |
 
