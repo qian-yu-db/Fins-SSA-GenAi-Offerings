@@ -5,7 +5,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -38,6 +38,7 @@ audio_sub = "audio_clips"
 
 if reset_all_data:
     try:
+        print("clean volume ...")
         dbutils.fs.rm(f'{volume_folder_policy}/{policy_sub}', True)
         dbutils.fs.rm(f'{volume_folder_speech}/{audio_sub}', True)
     except Exception as e:
@@ -52,7 +53,14 @@ def is_folder_empty(folder):
     return len(dbutils.fs.ls(folder)) == 0
   except:
     return True
+  
+
+def get_subdir_name(owner, repo, path):
+    content = requests.get(f'https://api.github.com/repos/{owner}/{repo}/contents/{path}').json()
+    subdirectories = [item for item in content if item['type'] == 'dir']
+    return [subdir['name'] for subdir in subdirectories]
  
+
 def download_file_from_git(dest, owner, repo, path):
     def download_file(url, destination):
       local_filename = url.split('/')[-1]
@@ -89,27 +97,18 @@ repo_name = 'Fins-SSA-GenAi-Offerings'
 if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or is_folder_empty(f"{volume_folder_speech}/{audio_sub}"):
     download_file_from_git(dest=f'{volume_folder_policy}/{policy_sub}', 
                            owner=repo_owner, 
-                           repo=repo_name, 
+                           repo=repo_name,
                            path="/datasets/insurance_policies")
-    download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/policy_no_102147884', 
-                           owner=repo_owner, 
-                           repo=repo_name, 
-                           path="/datasets/call_center_audio_clips/policy_no_102147884")
-    download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/policy_no_102147885', 
-                           owner=repo_owner, 
-                           repo=repo_name, 
-                           path="/datasets/call_center_audio_clips/policy_no_102147885")
-    download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/policy_no_102147886', 
-                           owner=repo_owner, 
-                           repo=repo_name, 
-                           path="/datasets/call_center_audio_clips/policy_no_102147886")
-    download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/policy_no_102147887', 
-                           owner=repo_owner, 
-                           repo=repo_name, 
-                           path="/datasets/call_center_audio_clips/policy_no_102147887")
-    download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/policy_no_102147888', 
-                           owner=repo_owner, 
-                           repo=repo_name, 
-                           path="/datasets/call_center_audio_clips/policy_no_102147888")
+    
+    audio_clip_subdirs = get_subdir_name(owner=repo_owner, repo=repo_name, path="datasets/call_center_audio_clips") 
+    for subdir in audio_clip_subdirs:
+        download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/{subdir}', 
+                            owner=repo_owner, 
+                            repo=repo_name, 
+                            path=f"/datasets/call_center_audio_clips/{subdir}")
 else:
     print("Data already existing. To clean up, run above cell with reset_all_date=True.")
+
+# COMMAND ----------
+
+

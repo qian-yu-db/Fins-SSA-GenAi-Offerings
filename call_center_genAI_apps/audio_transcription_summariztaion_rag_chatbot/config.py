@@ -13,6 +13,7 @@ catalog = "qyu"
 dbName = db = "test"
 volume_name_policies = "volume_policies"
 volume_name_audio = "volume_speech"
+volume_name_rag = "volume_rag"
 VECTOR_SEARCH_ENDPOINT_NAME = "one-env-shared-endpoint-4"
 
 # COMMAND ----------
@@ -45,6 +46,7 @@ print(f"Use Catalog: {catalog}")
 print(f"Use Schema: {db}")
 print(f"Use Volumes for policy data: {volume_name_audio}")
 print(f"Use Volumes for speech data: {volume_name_policies}")
+print(f"Use Volumes for policy data: {volume_name_rag}")
 
 # COMMAND ----------
 

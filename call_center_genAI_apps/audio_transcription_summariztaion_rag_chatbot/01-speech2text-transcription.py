@@ -6,7 +6,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -127,6 +127,7 @@ display(bytes2audio(audio_byte))
 # MAGIC 1. Navigate to Databricks `Marketplace` in the right menu
 # MAGIC 2. Search for `whisper` in the search box
 # MAGIC 3. Click `whisper V3 Model` box, click `Get instant acess` botton at the top right corner to regiser the model to the unity catalog
+# MAGIC     * You can define the catalog name to save and registered the model, this notebook uses `databricks_whisper_v3_model_{catalog}` as the name. If you defined a different name, please be sure to change the `model_catalog_name` variable in the below cell 
 # MAGIC     * If the model already be registered, click `Open` to access the registered model
 # MAGIC
 # MAGIC Deploy the model to the Databricks model serving endpoint either with UI or programmetically using Databricks API
@@ -144,7 +145,7 @@ display(bytes2audio(audio_byte))
 
 model_name = 'whisper_large_v3'
 version = "1"
-model_catalog_name = f'databricks_whisper_v3_model_{catalog}'
+model_catalog_name = f'databricks_whisper_v3_model_{catalog}' # please change to your defined model catalog name
 model_uc_path = f"{model_catalog_name}.models.{model_name}"
 endpoint_name = f'{model_name}_{catalog}'
 print(f"Model name: {model_name}")
@@ -172,6 +173,8 @@ client.search_model_versions(f"name='{model_uc_path}'")
 # MAGIC %md
 # MAGIC
 # MAGIC ### Deploy the model to model serving endpoint
+# MAGIC
+# MAGIC **Note**: Whisper is a very large and needs to be deployed on a GPU instances and it typically takes about 20 - 30 mins to be deployed. Please be patient and it is a good time to take a coffee break!
 
 # COMMAND ----------
 
@@ -216,7 +219,7 @@ latest_model_version = get_latest_model_version(model_uc_path)
 
 if existing_endpoint == None:
     print(f"Creating the endpoint {serving_endpoint_url}, this will take a few minutes to package and deploy the endpoint...")
-    w.serving_endpoints.create_and_wait(name=endpoint_name, config=config)
+    w.serving_endpoints.create_and_wait(name=endpoint_name, config=config, timeout=datetime.timedelta(minutes=30))
 else:
     print(f"The endpoint {serving_endpoint_url} already exist...")
 
@@ -250,9 +253,7 @@ df_audio.head(5)
 
 # MAGIC %md
 # MAGIC
-# MAGIC ## Perform inference for a single request
-# MAGIC
-# MAGIC You can also directly load the model as a Spark UDF and run batch inference on Databricks compute using Spark. We recommend using a GPU cluster with Databricks Runtime for Machine Learning version 14.1 or greater.
+# MAGIC ## Perform inference for a single request to the endpoint
 
 # COMMAND ----------
 
@@ -287,33 +288,18 @@ mlflow_model_query(request_example, endpoint_name)
 
 # MAGIC %md
 # MAGIC
-# MAGIC ### Exam Inference Table from model serving
-# MAGIC
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC USE CATALOG fins_genai;
-# MAGIC USE SCHEMA speech;
-# MAGIC
-# MAGIC select
-# MAGIC     client_request_id,
-# MAGIC     date,
-# MAGIC     request,
-# MAGIC     response
-# MAGIC from speech2text_model_inference_payload
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
 # MAGIC ## Perform Batch Inference
+# MAGIC
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC
 # MAGIC ### Batch Inference with model serving endpoint
+
+# COMMAND ----------
+
+print(f"endpoint_name: {endpoint_name}")
 
 # COMMAND ----------
 
@@ -325,7 +311,7 @@ def speech2text(audio_bytes: pd.Series, policy_id: pd.Series) -> pd.Series:
     import mlflow.deployments
     import base64
     deploy_client = mlflow.deployments.get_deploy_client("databricks")
-    endpoint_name = "whisper_large_v3_fins_genai"
+    endpoint_name = "whisper_large_v3_qyu" # change to the right endpoint name if needed
 
     def transcribe(audio, policy_id):
         request = {
@@ -360,10 +346,14 @@ display(transcript_df)
 
 # COMMAND ----------
 
+volume_folder_audio_top
+
+# COMMAND ----------
+
 volume_folder_to_save = f"{volume_folder_audio_top}/transcript_saved"
 
 transcript_df = transcript_df.withColumn("datetime_record", current_timestamp())
-transcript_df.repartition(5) \
+transcript_df.repartition(10) \
     .write \
     .format("json") \
     .mode("overwrite") \
@@ -374,7 +364,9 @@ transcript_df.repartition(5) \
 
 # MAGIC %md 
 # MAGIC
-# MAGIC ### Batch Inference without model serving endpoint
+# MAGIC ### Batch Inference without model serving endpoint (**Optional**)
+# MAGIC
+# MAGIC You can also directly load the model as a Spark UDF and run batch inference on Databricks compute using Spark. We recommend using a GPU cluster with Databricks Runtime for Machine Learning version 14.1 or greater.
 # MAGIC
 # MAGIC Requirements:
 # MAGIC
@@ -383,60 +375,41 @@ transcript_df.repartition(5) \
 # MAGIC * Package the model using MLFlow Pyfunc Template to create a spark UDF for inference
 # MAGIC * Model related packages needs to be enabled at worker nodes
 # MAGIC     * Install `ffmpeg` to both driver and worker nodes
+# MAGIC         * Install to driver with `%sh apt-get update -y && apt install ffmpeg -y`
+# MAGIC         * Install to worker node with:
+# MAGIC         ```scala
+# MAGIC         import scala.concurrent.duration._
+# MAGIC         import sys.process._
+# MAGIC         var res = sc.runOnEachExecutor({ () =>
+# MAGIC         var cmd_Result=Seq("bash", "-c", "apt-get update -y && apt install ffmpeg -y").!!
+# MAGIC         cmd_Result }, 1000.seconds)
+# MAGIC         ```
 # MAGIC     * Install Huggingface transformers and torch modules if user is not using ML Runtime `%pip install --upgrade git+https://github.com/huggingface/transformers.git accelerate datasets[audio]`
 
 # COMMAND ----------
 
-# MAGIC %sh apt-get update -y && apt install ffmpeg -y
-
-# COMMAND ----------
-
-# MAGIC %scala
-# MAGIC  
-# MAGIC import scala.concurrent.duration._
-# MAGIC import sys.process._
-# MAGIC var res = sc.runOnEachExecutor({ () =>
-# MAGIC   var cmd_Result=Seq("bash", "-c", "apt-get update -y && apt install ffmpeg -y").!!
-# MAGIC cmd_Result }, 1000.seconds)
-
-# COMMAND ----------
-
-# MAGIC %sh ffmpeg
-
-# COMMAND ----------
-
-from mlflow import MlflowClient
-
-def get_latest_model_version(model_name):
-    mlflow_client = MlflowClient()
-    latest_version = 1
-    for mv in mlflow_client.search_model_versions(f"name='{model_name}'"):
-        version_int = int(mv.version)
-        if version_int > latest_version:
-            latest_version = version_int
-    return latest_version
-
-# COMMAND ----------
-
-from pyspark.sql.types import StringType
-import mlflow
-mlflow.set_registry_uri("databricks-uc")
-
-version = get_latest_model_version(model_uc_path)
-predict = mlflow.pyfunc.spark_udf(spark, f"models:/{model_uc_path}/{version}", StringType())
-
-# COMMAND ----------
-
-import pandas as pd
-
-wav_file = '/dbfs/user/q.yu@databricks.com/speech/preamble10.wav'
-with open(wav_file, 'rb') as audio_file:
-    audio_bytes = audio_file.read()
-    dataset = pd.DataFrame(pd.Series([audio_bytes]))
-
-df_test = spark.createDataFrame(dataset)
-
-# COMMAND ----------
-
-t = df_test.select(transcribe(df_test["0"]).alias('transcription'))
-display(t)
+# MAGIC %md
+# MAGIC
+# MAGIC #### batch inference code example
+# MAGIC
+# MAGIC
+# MAGIC ```python
+# MAGIC from pyspark.sql.types import StringType
+# MAGIC import mlflow
+# MAGIC mlflow.set_registry_uri("databricks-uc")
+# MAGIC
+# MAGIC version = get_latest_model_version(model_uc_path)
+# MAGIC predict = mlflow.pyfunc.spark_udf(spark, f"models:/{model_uc_path}/{version}", StringType())
+# MAGIC
+# MAGIC import pandas as pd
+# MAGIC
+# MAGIC wav_file = '/dbfs/user/<user_name>/speech/test.wav'
+# MAGIC with open(wav_file, 'rb') as audio_file:
+# MAGIC     audio_bytes = audio_file.read()
+# MAGIC     dataset = pd.DataFrame(pd.Series([audio_bytes]))
+# MAGIC
+# MAGIC df_test = spark.createDataFrame(dataset)
+# MAGIC
+# MAGIC transcript = df_test.select(transcribe(df_test["0"]).alias('transcription'))
+# MAGIC display(trascript)
+# MAGIC ```
