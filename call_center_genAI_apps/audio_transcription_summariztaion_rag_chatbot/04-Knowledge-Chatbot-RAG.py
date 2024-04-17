@@ -313,3 +313,12 @@ question = {"query": "What are some of the customer's asks related to motocycle?
 
 answer = w.serving_endpoints.query(serving_endpoint_name, inputs=[question])
 print(answer.predictions[0])
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Next Step, we create a RAG Chatbot with Notebook [05-Inference-Tables-Monitoring-LLM-Metrics]($./05-Inference-Tables-Monitoring-LLM-Metrics)
+
+# COMMAND ----------
+
+
