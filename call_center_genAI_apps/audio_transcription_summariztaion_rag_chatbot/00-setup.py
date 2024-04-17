@@ -88,9 +88,12 @@ def download_file_from_git(dest, owner, repo, path):
 # MAGIC %md
 # MAGIC
 # MAGIC ## Download Data from Github to Unity Catalog Volumes
+# MAGIC
+# MAGIC **Note**: To help reduce the notebook running time due to Speech to Text transcription time, we sample 20 conversations only. There are total of 65 conversation available to sample from
 
 # COMMAND ----------
 
+import random
 repo_owner = 'qian-yu-db'
 repo_name = 'Fins-SSA-GenAi-Offerings'
 
@@ -100,8 +103,12 @@ if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or is_folder_empty(f"
                            repo=repo_name,
                            path="/datasets/insurance_policies")
     
-    audio_clip_subdirs = get_subdir_name(owner=repo_owner, repo=repo_name, path="datasets/call_center_audio_clips") 
-    for subdir in audio_clip_subdirs:
+    audio_clip_subdirs = get_subdir_name(owner=repo_owner, repo=repo_name, path="datasets/call_center_audio_clips")
+
+    # To help reduce the notebook running time, we sample 20 conversations only
+    audio_clip_subdirs_sample = random.sample(audio_clip_subdirs, k=20)
+    print(f"Download {len(audio_clip_subdirs_sample)} audio conversations")
+    for subdir in audio_clip_subdirs_sample:
         download_file_from_git(dest=f'{volume_folder_speech}/{audio_sub}/{subdir}', 
                             owner=repo_owner, 
                             repo=repo_name, 

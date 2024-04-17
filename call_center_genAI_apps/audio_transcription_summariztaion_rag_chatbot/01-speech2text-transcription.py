@@ -34,7 +34,6 @@
 audio_sub = "audio_clips"
 volume_folder_audio_top = f"/Volumes/{catalog}/{db}/{volume_name_audio}"
 volume_folder_audio_samples = f"{volume_folder_audio_top}/audio_clips"
-display(dbutils.fs.ls(f'{volume_folder_audio_samples}/policy_no_102147884/'))
 
 # COMMAND ----------
 
@@ -413,3 +412,12 @@ transcript_df.repartition(10) \
 # MAGIC transcript = df_test.select(transcribe(df_test["0"]).alias('transcription'))
 # MAGIC display(trascript)
 # MAGIC ```
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Next Step, we go to [Notebook 02-DLT-Transcript-Policy]($./02-DLT-Transcript-Policy)
+
+# COMMAND ----------
+
+

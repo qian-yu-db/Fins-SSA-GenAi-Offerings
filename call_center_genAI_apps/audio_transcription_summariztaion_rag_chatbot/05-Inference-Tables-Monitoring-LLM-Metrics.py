@@ -5,7 +5,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -22,23 +22,6 @@ checkpoint_location = f'dbfs:/Volumes/{catalog}/{db}/{volume_name_rag}/checkpoin
 
 import requests
 from typing import Dict
-
-
-def get_endpoint_status(endpoint_name: str) -> Dict:
-    # Fetch the PAT token to send in the API request
-    workspace_url = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiUrl().get()
-    token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().getOrElse(None)
-
-    headers = {"Authorization": f"Bearer {token}"}
-    response = requests.get(f"{workspace_url}/api/2.0/serving-endpoints/{endpoint_name}", json={"name": endpoint_name}, headers=headers).json()
-
-    # Verify that Inference Tables is enabled.
-    if "auto_capture_config" not in response.get("config", {}) or not response["config"]["auto_capture_config"]["enabled"]:
-        raise Exception(f"Inference Tables is not enabled for endpoint {endpoint_name}. \n"
-                        f"Received response: {response} from endpoint.\n"
-                        "Please create an endpoint with Inference Tables enabled before running this notebook.")
-
-    return response
 
 response = get_endpoint_status(endpoint_name=serving_endpoint_name)
 auto_capture_config = response["config"]["auto_capture_config"]
@@ -278,3 +261,7 @@ except Exception as e:
 monitor = lm.get_monitor(table_name=processed_table_name)
 url = f'https://{spark.conf.get("spark.databricks.workspaceUrl")}/sql/dashboards/{monitor.dashboard_id}'
 print(f"You can monitor the performance of your chatbot at {url}")
+
+# COMMAND ----------
+
+

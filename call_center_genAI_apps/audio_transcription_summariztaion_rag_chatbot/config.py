@@ -14,7 +14,7 @@ dbName = db = "test"
 volume_name_policies = "volume_policies"
 volume_name_audio = "volume_speech"
 volume_name_rag = "volume_rag"
-VECTOR_SEARCH_ENDPOINT_NAME = "one-env-shared-endpoint-4"
+VECTOR_SEARCH_ENDPOINT_NAME = "rag_endpoint_qyu"
 
 # COMMAND ----------
 
@@ -47,6 +47,7 @@ print(f"Use Schema: {db}")
 print(f"Use Volumes for policy data: {volume_name_audio}")
 print(f"Use Volumes for speech data: {volume_name_policies}")
 print(f"Use Volumes for policy data: {volume_name_rag}")
+print(f"Use Vector Search Endpoint name: {VECTOR_SEARCH_ENDPOINT_NAME}")
 
 # COMMAND ----------
 
@@ -57,6 +58,8 @@ print(f"Use Volumes for policy data: {volume_name_rag}")
 # MAGIC * `get_latest_model_version()`: Return the latest model version
 # MAGIC * `index_exists()`: Check whether a vector index already exists
 # MAGIC * `wait_for_vs_endpoint_to_be_ready()`: wait until the vector index endpoint is ready to be queried
+# MAGIC * `wait_for_index_to_be_ready()`: wait for vector index to be ready
+# MAGIC * `get_endpoint_status()`: collect endpoint status
 
 # COMMAND ----------
 
@@ -117,6 +120,7 @@ def wait_for_vs_endpoint_to_be_ready(vsc, vs_endpoint_name):
       raise Exception(f'''Error with the endpoint {vs_endpoint_name}. - this shouldn't happen: {endpoint}.\n Please delete it and re-run the previous cell: vsc.delete_endpoint("{vs_endpoint_name}")''')
   raise Exception(f"Timeout, your endpoint isn't ready yet: {vsc.get_endpoint(vs_endpoint_name)}")
 
+
 def wait_for_index_to_be_ready(vsc, vs_endpoint_name, index_name):
   for i in range(180):
     idx = vsc.get_index(vs_endpoint_name, index_name).describe()
@@ -134,6 +138,23 @@ def wait_for_index_to_be_ready(vsc, vs_endpoint_name, index_name):
     else:
         raise Exception(f'''Error with the index - this shouldn't happen. DLT pipeline might have been killed.\n Please delete it and re-run the previous cell: vsc.delete_index("{index_name}, {vs_endpoint_name}") \nIndex details: {idx}''')
   raise Exception(f"Timeout, your index isn't ready yet: {vsc.get_index(index_name, vs_endpoint_name)}")
+
+
+def get_endpoint_status(endpoint_name):
+    # Fetch the PAT token to send in the API request
+    workspace_url = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiUrl().get()
+    token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().getOrElse(None)
+
+    headers = {"Authorization": f"Bearer {token}"}
+    response = requests.get(f"{workspace_url}/api/2.0/serving-endpoints/{endpoint_name}", json={"name": endpoint_name}, headers=headers).json()
+
+    # Verify that Inference Tables is enabled.
+    if "auto_capture_config" not in response.get("config", {}) or not response["config"]["auto_capture_config"]["enabled"]:
+        raise Exception(f"Inference Tables is not enabled for endpoint {endpoint_name}. \n"
+                        f"Received response: {response} from endpoint.\n"
+                        "Please create an endpoint with Inference Tables enabled before running this notebook.")
+
+    return response
 
 # COMMAND ----------
 

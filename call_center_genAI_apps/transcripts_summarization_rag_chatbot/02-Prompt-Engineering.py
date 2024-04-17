@@ -7,7 +7,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -63,10 +63,6 @@ def summarizer(conversations: pd.Series) -> pd.Series:
     def get_summary(conv):
         business='insurance'
         system_message = f"You are an expert in {business} and a helpful assistant."
-
-        # ensure the token size does not exceed limit
-        encoding_name = "cl100k_base"
-        max_number_of_tokens = 3000
 
         Prompt = \
         f"""
@@ -127,10 +123,13 @@ display(transcript_df_with_summary)
 # MAGIC # Save the summarization and sentiment results with the transcript to a table 
 # MAGIC
 # MAGIC * we can build a LLM RAG chatbot with the summary as context using the databricks vector database next
+# MAGIC * We write a table with < 20 columns due to vector search index current column limits for workspace
 
 # COMMAND ----------
 
-(transcript_df_with_summary.write
+(transcript_df_with_summary
+    .select("CUST_ID", "POLICY_NO", "pol_issue_date", "BODY", "MAKE", "MODEL", "PRODUCT", "MODEL_YEAR", "USE_OF_VEHICLE", "ZIP_CODE", "transcript", "summary", "sentiment")
+    .write
     .mode('overwrite')
     .option("overwriteSchema", "true")
     .saveAsTable("customer_service_nlp"))
@@ -162,7 +161,3 @@ display(transcript_df_with_summary)
 # MAGIC %md
 # MAGIC
 # MAGIC Next Step, we create a RAG Chatbot with [Notebook 03-Knowledge-Chatbot-RAG]($./03-Knowledge-Chatbot-RAG)
-
-# COMMAND ----------
-
-

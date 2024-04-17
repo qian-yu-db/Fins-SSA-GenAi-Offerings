@@ -19,8 +19,8 @@ from pyspark.sql import functions as F
 from pyspark.sql.functions import lit, concat, col
 from pyspark.sql import types as T
 
-catalog = "fins_genai"
-db = "speech"
+catalog = "qyu"
+db = "test"
 transcript_table = "customer_transcripts"
 volume_name_policies = "volume_policies"
 volume_name_speech = "volume_speech"
@@ -36,7 +36,7 @@ volume_name_speech = "volume_speech"
 # COMMAND ----------
 
 @dlt.table(
-    name="raw_policy_v1",
+    name="raw_policy",
     comment="Policy data loaded from csv files.")
 def raw_policy():
     return (
@@ -56,7 +56,7 @@ def raw_transcript():
       spark.readStream.format("cloudFiles")
             .option("cloudFiles.format", "json")
             .option("cloudFiles.inferColumnTypes", "true")
-            .load(f"/Volumes/{catalog}/{db}/{volume_name_speech}/transcripts_json_data"))
+            .load(f"/Volumes/{catalog}/{db}/{volume_name_speech}/transcript_saved"))
 
 # COMMAND ----------
 
@@ -69,13 +69,13 @@ def raw_transcript():
 # COMMAND ----------
 
 @dlt.table(
-    name="policy_v1",
+    name="policy",
     comment="clean raw policy data table"
 )
 @dlt.expect_all({"valid_policy_number": "POLICY_NO IS NOT NULL"})
 def policy():
     # Read the staged policy records into memory
-    return (dlt.readStream("raw_policy_v1")
+    return (dlt.readStream("raw_policy")
                 .withColumn("premium", F.abs(col("premium")))
                 # Reformat the incident date values
                 .withColumn("pol_eff_date", F.to_date(col("pol_eff_date"), "dd-MM-yyyy"))
@@ -93,7 +93,7 @@ def policy():
 @dlt.expect_all({"valid_policy_number": "POLICY_NO IS NOT NULL"})
 def transript():
     return (dlt.readStream("raw_transcript")
-            .select("POLICY_NO", "conversation", "datetime_record"))
+            .select("POLICY_NO", "transcript", "datetime_record"))
 
 # COMMAND ----------
 
@@ -113,7 +113,7 @@ def transript():
 def transcript_enriched():
     transcript_cleaned = dlt.read("transcript")
     transcript_renamed = transcript_cleaned.select(
-        col("POLICY_NO"), col("conversation").alias("transcript"), col("datetime_record")
+        col("POLICY_NO"), col("transcript"), col("datetime_record")
     )
-    policy_cleaned = dlt.read("policy_v1")
+    policy_cleaned = dlt.read("policy")
     return transcript_renamed.join(policy_cleaned, on="POLICY_NO")

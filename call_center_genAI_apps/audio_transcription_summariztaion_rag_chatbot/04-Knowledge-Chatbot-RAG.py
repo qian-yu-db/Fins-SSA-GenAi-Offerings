@@ -5,7 +5,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -30,7 +30,7 @@ table_name = "customer_service_nlp"
 
 spark.sql(f"USE CATALOG {catalog};")
 spark.sql(f"USE schema {db};")
-df_conversation = spark.table(table_name).select("CUST_ID", "POLICY_NO", "pol_issue_date", "BODY", "MAKE", "MODEL", "PRODUCT", "MODEL_YEAR", "USE_OF_VEHICLE", "ZIP_CODE", "transcript", "summary", "sentiment")
+df_conversation = spark.table(table_name)
 display(df_conversation)
 
 # COMMAND ----------
@@ -57,30 +57,27 @@ print(embeddings)
 # MAGIC ## Create a Vector Search Index endpoint and sync with the transcript summary table
 # MAGIC
 # MAGIC **Note**: It will take a few minutes to get a new vector search index to be created and be ready to use
-# MAGIC
-# MAGIC [Vector Search Index Product Spec](https://docs.databricks.com/en/generative-ai/vector-search.html)
 
 # COMMAND ----------
 
 from databricks.vector_search.client import VectorSearchClient
 vsc = VectorSearchClient()
 
-def index_exists(vsc, endpoint_name, index_full_name):
-    try:
-        dict_vsindex = vsc.get_index(endpoint_name, index_full_name).describe()
-        return dict_vsindex.get('status').get('ready', False)
-    except Exception as e:
-        if 'RESOURCE_DOES_NOT_EXIST' not in str(e):
-            print(f'Unexpected error describing the index. This could be a permission issue.')
-            raise e
-    return False
+# COMMAND ----------
+
+# Check if the endpoint already exist otherwise create an endpoint
+if not endpoint_exists(vsc, VECTOR_SEARCH_ENDPOINT_NAME):
+    vsc.create_endpoint(name=VECTOR_SEARCH_ENDPOINT_NAME, endpoint_type="STANDARD")
+
+wait_for_vs_endpoint_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME)
+print(f"Endpoint named {VECTOR_SEARCH_ENDPOINT_NAME} is ready.")
 
 # COMMAND ----------
 
 # DBTITLE 1,If the vector store endpoint already exist, we do not need to recreate
-vs_index_fullname = f"{catalog}.{db}.customer_service_vs_index"
-source_table_fullname = f"{catalog}.{db}.customer_service_nlp"
-VECTOR_SEARCH_ENDPOINT_NAME = "one-env-shared-endpoint-4"
+index_name = "customer_service_vs_index"
+vs_index_fullname = f"{catalog}.{db}.{index_name}"
+source_table_fullname = f"{catalog}.{db}.{table_name}"
 
 if not index_exists(vsc=vsc, endpoint_name=VECTOR_SEARCH_ENDPOINT_NAME, index_full_name=vs_index_fullname):
   print(f"Creating index {vs_index_fullname} on endpoint {VECTOR_SEARCH_ENDPOINT_NAME}...")
@@ -93,18 +90,20 @@ if not index_exists(vsc=vsc, endpoint_name=VECTOR_SEARCH_ENDPOINT_NAME, index_fu
     embedding_source_column='summary', #The column containing our text
     embedding_model_endpoint_name='databricks-bge-large-en' #The embedding endpoint used to create the embeddings
   )
+  wait_for_index_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname)
 else: 
   #Trigger a sync to update our vs content with the new data saved in the table
   print(f"The vector search index endpoint {VECTOR_SEARCH_ENDPOINT_NAME} is already exists, we will perform a sync")
+  wait_for_index_to_be_ready(vsc, VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname)
   vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).sync()
+
+print(f"index {vs_index_fullname} on table {source_table_fullname} is ready")
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC
 # MAGIC ### We can perform similarity search on the vector search index
-# MAGIC
-# MAGIC Example 1. Simple similarity search:
 # MAGIC
 # MAGIC Here we retreive top 3 records related to `car accidents`
 
@@ -120,25 +119,6 @@ question = "car accident"
 results = vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).similarity_search(
   query_text=question,
   columns=["summary", "POLICY_NO"],
-  num_results=3)
-docs = results.get('result', {}).get('data_array', [])
-docs
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Example 2: Similarity search using meta data column as filter: 
-# MAGIC
-# MAGIC Here we use `MAKE` to filter only the `car accident` results with `HONDA` or `TOYOTA`
-
-# COMMAND ----------
-
-# We can perform similarity search using vecctor search index and filter
-question = "car accident"
-results = vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).similarity_search(
-  query_text=question,
-  columns=["summary", "POLICY_NO", "MAKE"],
-  filters={"MAKE": ["TOYOTA", "HONDA"]},
   num_results=3)
 docs = results.get('result', {}).get('data_array', [])
 docs
@@ -229,24 +209,6 @@ displayHTML(answer.replace("\n", "<br>"))
 
 # COMMAND ----------
 
-question = {"query": "What are the main concerns when customers want to add a new driver?"}
-
-answer = chain.run(question)
-print(answer)
-
-# COMMAND ----------
-
-displayHTML(answer.replace("\n", "<br>"))
-
-# COMMAND ----------
-
-question = "What are the MAKE of car involved in car accident?"
-
-answer = chain.run(question)
-print(answer)
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC
 # MAGIC # Saving the RAG model to Unity Catalog Registry
@@ -287,24 +249,9 @@ with mlflow.start_run(run_name="rag_customer_service_chatbot") as run:
 # COMMAND ----------
 
 from databricks.sdk import WorkspaceClient
-w = WorkspaceClient()
-
-# COMMAND ----------
-
 from mlflow import MlflowClient
 
-def get_latest_model_version(model_name):
-    mlflow_client = MlflowClient()
-    latest_version = 1
-    for mv in mlflow_client.search_model_versions(f"name='{model_name}'"):
-        version_int = int(mv.version)
-        if version_int > latest_version:
-            latest_version = version_int
-    return latest_version
-
-# COMMAND ----------
-
-model_name = f"{catalog}.{db}.rag_customer_service_chatbot"
+w = WorkspaceClient()
 
 # COMMAND ----------
 
@@ -351,23 +298,18 @@ displayHTML(f'Your Model Endpoint Serving is now available. Open the <a href="/m
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC
 # MAGIC ## Query the endpoint we created
 
 # COMMAND ----------
 
-question = {"query": "What are the main concerns when customers want to add a new driver?"}
+question = {"query": "What are some of main incidents related to home insurance?"}
 
 answer = w.serving_endpoints.query(serving_endpoint_name, inputs=[question])
 print(answer.predictions[0])
 
 # COMMAND ----------
 
-question = {"query": "How can we improve our response to theft related incidents"}
+question = {"query": "What are some of the customer's asks related to motocycle?"}
 
 answer = w.serving_endpoints.query(serving_endpoint_name, inputs=[question])
 print(answer.predictions[0])
-
-# COMMAND ----------
-
-

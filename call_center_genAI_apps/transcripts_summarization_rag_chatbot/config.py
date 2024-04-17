@@ -45,6 +45,7 @@ print(f"Use Catalog: {catalog}")
 print(f"Use Schema: {db}")
 print(f"Use Volumes for policy data: {volume_name_audio}")
 print(f"Use Volumes for speech data: {volume_name_policies}")
+print(f"Use Vector Search Endpoint name: {VECTOR_SEARCH_ENDPOINT_NAME}")
 
 # COMMAND ----------
 
@@ -114,6 +115,7 @@ def wait_for_vs_endpoint_to_be_ready(vsc, vs_endpoint_name):
     else:
       raise Exception(f'''Error with the endpoint {vs_endpoint_name}. - this shouldn't happen: {endpoint}.\n Please delete it and re-run the previous cell: vsc.delete_endpoint("{vs_endpoint_name}")''')
   raise Exception(f"Timeout, your endpoint isn't ready yet: {vsc.get_endpoint(vs_endpoint_name)}")
+
 
 def wait_for_index_to_be_ready(vsc, vs_endpoint_name, index_name):
   for i in range(180):

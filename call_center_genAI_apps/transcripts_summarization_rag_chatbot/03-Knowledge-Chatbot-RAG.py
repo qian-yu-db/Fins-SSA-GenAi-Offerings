@@ -5,7 +5,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ../config
+# MAGIC %run ./config
 
 # COMMAND ----------
 
@@ -30,7 +30,7 @@ table_name = "customer_service_nlp"
 
 spark.sql(f"USE CATALOG {catalog};")
 spark.sql(f"USE schema {db};")
-df_conversation = spark.table(table_name).select("CUST_ID", "POLICY_NO", "pol_issue_date", "BODY", "MAKE", "MODEL", "PRODUCT", "MODEL_YEAR", "USE_OF_VEHICLE", "ZIP_CODE", "transcript", "summary", "sentiment")
+df_conversation = spark.table(table_name)
 display(df_conversation)
 
 # COMMAND ----------
@@ -119,6 +119,18 @@ question = "car accident"
 results = vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).similarity_search(
   query_text=question,
   columns=["summary", "POLICY_NO"],
+  num_results=3)
+docs = results.get('result', {}).get('data_array', [])
+docs
+
+# COMMAND ----------
+
+# We can perform similarity search using vecctor search index and filter
+question = "car accident"
+results = vsc.get_index(VECTOR_SEARCH_ENDPOINT_NAME, vs_index_fullname).similarity_search(
+  query_text=question,
+  columns=["summary", "POLICY_NO", "MAKE"],
+  filters={"MAKE": ["TOYOTA", "HONDA"]},
   num_results=3)
 docs = results.get('result', {}).get('data_array', [])
 docs
