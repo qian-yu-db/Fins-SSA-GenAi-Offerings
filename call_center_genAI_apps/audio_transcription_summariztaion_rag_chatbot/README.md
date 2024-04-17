@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![image](../../imgs/audio_transcription_rag.png)
+![image](../../imgs/audio_transcription_rag_v2.png)
 
 ## Please Follow the Steps Below:
 
