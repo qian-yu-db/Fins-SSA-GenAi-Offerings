@@ -12,4 +12,4 @@ The goal is to give Databricks’ customers a blueprint to start a POC for more 
 ## Templates
 
 1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
-2. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
+2. [Extract Intelligence from raw call center audio using RAG](./audio_transcription_summariztion_rag_chatbot/)
