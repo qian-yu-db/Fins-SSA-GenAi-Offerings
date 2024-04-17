@@ -5,9 +5,11 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 # Table of Content <!-- omit in toc -->
 - [Requirements](#requirements)
 - [PoC Accelerator Templates](#poc-accelerator-templates)
+  - [GenAI Lakehouse Data Ingestion Pipeline Architecture Patterns](#genai-lakehouse-data-ingestion-pipeline-architecture-patterns)
+  - [End to End GenAI Application Architecture Patterns](#end-to-end-genai-application-architecture-patterns)
 - [When to Use](#when-to-use)
   - [Getting Started](#getting-started)
-- [GenAI Resources](#genai-resources)
+- [Resources](#resources)
 - [Limitations](#limitations)
 
 # Requirements
@@ -17,12 +19,21 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 # PoC Accelerator Templates
 
+## GenAI Lakehouse Data Ingestion Pipeline Architecture Patterns
+
+| Input Data Types | Input Data Store  |  Databricks Lakehouse Features | PoC Template  |
+|------------------|-------------------|----------------|-------------------------------|
+| JSON Text Transcripts | Unity Catalog Volum | Delta Live Table, Delta Lake table, Unity Catalog | WIP |
+| Audio WAV file | Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | WIP |
+| PDF Doc (machine generated) | Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | WIP |
+| PDF Doc (with tables) |  Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | WIP |
+
+## End to End GenAI Application Architecture Patterns 
+
 | Input Data  | Model     | Tasks           | GenAI Use Case | Orchestration | Business Application | PoC Template     |
 |-------------|-----------|-----------------|----------------|--------------|----------------------|-------------------|
 | JSON Text Transcripts | Foundation LLM (e.g. DBRX) | Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Transcript RAG Apps](./call_center_genAI_apps/transcripts_summarization_rag_chatbot/) |
 | wav Audio | Foundation LLM (e.g. DBRX) | Speech Transcription, Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
-| PDF Doc (machine generated) |           |           |                    |            |             |           |
-| PDF Doc (with tables) |           |           |                    |            |             |           |
 
 
 # When to Use
