@@ -5,7 +5,7 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 # Table of Content <!-- omit in toc -->
 - [Requirements](#requirements)
 - [PoC Accelerator Templates](#poc-accelerator-templates)
-  - [GenAI Lakehouse Data Ingestion Pipeline Architecture Patterns](#genai-lakehouse-data-ingestion-pipeline-architecture-patterns)
+  - [GenAI Data Ingestion and Preprocessing Architecture Patterns](#genai-data-ingestion-and-preprocessing-architecture-patterns)
   - [End to End GenAI Application Architecture Patterns](#end-to-end-genai-application-architecture-patterns)
 - [When to Use](#when-to-use)
   - [Getting Started](#getting-started)
@@ -19,7 +19,7 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 # PoC Accelerator Templates
 
-## GenAI Lakehouse Data Ingestion Pipeline Architecture Patterns
+## GenAI Data Ingestion and Preprocessing Architecture Patterns
 
 | Input Data Types | Input Data Store  | chunking performed |  Databricks Lakehouse Features | OSS Technolgoy | PoC Template  |
 |------------------|-------------------|--------------------|--------------------------------|----------------------|---------------|
