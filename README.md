@@ -21,7 +21,7 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 ## GenAI Lakehouse Data Ingestion Pipeline Architecture Patterns
 
-| Input Data Types | Input Data Store  | chunking performed |  Databricks Lakehouse Features | 3rd Party Technolgoy | PoC Template  |
+| Input Data Types | Input Data Store  | chunking performed |  Databricks Lakehouse Features | OSS Technolgoy | PoC Template  |
 |------------------|-------------------|--------------------|--------------------------------|----------------------|---------------|
 | JSON Text Transcripts | Unity Catalog Volum | Delta Live Table, Delta Lake table, Unity Catalog | N/A | N/A | WIP |
 | Audio WAV file | Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | N/A | Whisper-large-v3 | WIP |
