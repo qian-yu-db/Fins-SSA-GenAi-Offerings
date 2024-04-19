@@ -23,10 +23,10 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 | Input Data Types | Input Data Store  | Databricks Lakehouse Features | chunking performed | OSS Technolgoy | PoC Template  |
 |------------------|-------------------|--------------------|--------------------------------|----------------------|---------------|
-| JSON Text Transcripts | Unity Catalog Volum | <ul><li> - [ ] Delta Live Table </li><li> - [ ] Delta Lake table </li><li> - [ ] Unity Catalog | N/A | N/A | WIP |
-| Audio WAV file | Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | N/A | [Whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) | WIP |
-| PDF Doc (machine generated) | Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
-| PDF Doc (with tables) |  Unity Catalog Volum | Autoloader, Structured Streaming, Delta table, Unity Catalog | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
+| JSON Text Transcripts | Unity Catalog Volum | <ul><li> - [x] Delta Live Table </li><li> - [x] Delta Lake table </li><li> - [x] Unity Catalog | N/A | N/A | WIP |
+| Audio WAV file | Unity Catalog Volum | <ul><li> - [x] Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog | N/A | [Whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) | WIP |
+| PDF Doc (machine generated) | Unity Catalog Volum | <ul><li> - [x] Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog  | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
+| PDF Doc (with tables) |  Unity Catalog Volum | <ul><li> - [x] Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
 
 ## End to End GenAI Application Architecture Patterns 
 
