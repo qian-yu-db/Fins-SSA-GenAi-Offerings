@@ -5,7 +5,9 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 # Table of Content <!-- omit in toc -->
 - [Requirements](#requirements)
 - [PoC Accelerator Templates](#poc-accelerator-templates)
-  - [GenAI Data Ingestion and Preprocessing Architecture Patterns](#genai-data-ingestion-and-preprocessing-architecture-patterns)
+  - [Data Ingestion and Preprocessing Architecture Patterns](#data-ingestion-and-preprocessing-architecture-patterns)
+  - [Chunking Strategy](#chunking-strategy)
+  - [GenAI Application](#genai-application)
   - [End to End GenAI Application Architecture Patterns](#end-to-end-genai-application-architecture-patterns)
 - [When to Use](#when-to-use)
   - [Getting Started](#getting-started)
@@ -19,14 +21,31 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 # PoC Accelerator Templates
 
-## GenAI Data Ingestion and Preprocessing Architecture Patterns
+## Data Ingestion and Preprocessing Architecture Patterns
 
-| Input Data Types | Input Data Store  | Databricks Lakehouse Features | chunking performed | OSS Technolgoy | PoC Template  |
+| Input Data Types | Input Data Store  | Databricks Lakehouse Features | chunking performed | OSS Technolgoy | Component Asset  |
 |------------------|-------------------|--------------------|--------------------------------|----------------------|---------------|
-| JSON Text Transcripts | Unity Catalog Volum | <ul><li> - [x] Delta Live Table </li><li> - [x] Delta Lake table </li><li> - [x] Unity Catalog | N/A | N/A | WIP |
-| Audio WAV file | Unity Catalog Volum | <ul><li> <style>span[class="checked"]{color: green;}</style> Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog | N/A | [Whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) | WIP |
-| PDF Doc (machine generated) | Unity Catalog Volum | <ul><li> - [x] Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog  | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
-| PDF Doc (with tables) |  Unity Catalog Volum | <ul><li> - [x] Autoloader </li><li> - [x] Structured Streaming </li><li> - [x] Delta lake table </li><li> - [x] Unity Catalog | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
+| JSON Text Transcripts | Unity Catalog Volum | <ul><li> :white_check_mark: Delta Live Table </li><li> :white_check_mark: Delta Lake table </li><li> :white_check_mark: Unity Catalog | N/A | N/A | WIP |
+| Audio WAV file | Unity Catalog Volum | <ul><li> :white_check_mark: Autoloader </li><li> :white_check_mark: Structured Streaming </li><li> :white_check_mark: Delta lake table </li><li> :white_check_mark: Unity Catalog | N/A | [Whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) | WIP |
+| PDF Doc (machine generated) | Unity Catalog Volum | <ul><li> :white_check_mark: Autoloader </li><li> :white_check_mark: Structured Streaming </li><li> :white_check_mark: Delta lake table </li><li> :white_check_mark: Unity Catalog  | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
+| PDF Doc (with tables) |  Unity Catalog Volum | <ul><li> :white_check_mark: Autoloader </li><li> :white_check_mark: Structured Streaming </li><li> :white_check_mark: Delta lake table </li><li> :white_check_mark: Unity Catalog | [Unstructured chunking strategy](https://unstructured-io.github.io/unstructured/core/chunking.html#id1) | [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html) | WIP |
+
+## Chunking Strategy
+
+| Chunking Strategy | Technology used | Component Asset |
+|-------------------|----------------|----------------|
+| Even size chunks  |                |                |
+| Structural chunking  |                |             |
+| Summarization chain  |                |             |
+| Recursive Character Text Splitter |   |             |
+
+## GenAI Application
+
+| Task | Model | Databricks Lakehouse Features | Business Application |
+|-------------------|----------------|----------------|---------------|
+| Topic Classification |             |                |               |
+| Sentiment Classification |             |                |           |
+| RAG (Retrieval Augmented Generation) |             |                |      |
 
 ## End to End GenAI Application Architecture Patterns 
 
@@ -36,6 +55,7 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 | JSON Text Transcripts | Foundation LLM (e.g. DBRX) | Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Transcript RAG Apps](./call_center_genAI_apps/transcripts_summarization_rag_chatbot/) |
 | wav Audio | Foundation LLM (e.g. DBRX) | Speech Transcription, Summarization, Sentiment | RAG | DLT, LangChain | Customer Call Center | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
 
+ 
 
 # When to Use
 
