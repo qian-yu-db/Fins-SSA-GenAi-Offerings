@@ -1,4 +1,4 @@
-# Application: Extract Intelligence from raw call center transcripts using RAG
+# Application: Extract Intelligence from raw call center audio clips using RAG
 
 ## Architecture
 
