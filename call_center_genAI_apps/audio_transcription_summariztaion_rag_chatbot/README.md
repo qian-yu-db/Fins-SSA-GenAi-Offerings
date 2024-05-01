@@ -9,7 +9,6 @@
 ### Introduction and Setup Environment
 
 * Use the notebook **`config`** to define the name of your preferred catalog, schema, and volume
-* Then review notebook **`Introduction`** for an overview of the current PoC Template
 * Run notebook **`00-setup`** to create a catalog, schema, volume, and download dataset to the volume
 
 ### Step 1. Raw Audio Ingestions with AutoLoader and Perform Speech to Text Transcription in Batch
