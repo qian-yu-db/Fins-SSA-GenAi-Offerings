@@ -54,6 +54,7 @@ import tiktoken
 # COMMAND ----------
 
 import pandas as pd
+from pyspark.sql.types import IntegerType, StringType
 
 @pandas_udf("string")
 def summarizer(conversations: pd.Series) -> pd.Series:
@@ -66,11 +67,11 @@ def summarizer(conversations: pd.Series) -> pd.Series:
 
         Prompt = \
         f"""
-        Please summarize the below conversation in 3 to 5 sentences and highlight 3 key words
+        Summarize the below conversation in 3 to 5 sentences and highlight 3 key words
 
-        <conversation>
-        {conv}
-        <conversation>
+        ---------------------
+        conversation: {conv}
+        ---------------------
         """
         messages = [{"role":"system", "content":system_message},
                     {"role":"user", "content":Prompt}]
@@ -80,28 +81,24 @@ def summarizer(conversations: pd.Series) -> pd.Series:
     return pd.Series([get_summary(c) for c in conversations])
 
 
-
 @pandas_udf("string")
 def sentiment(conversations: pd.Series) -> pd.Series:
     import mlflow.deployments
     deploy_client = mlflow.deployments.get_deploy_client("databricks")
 
     def get_sentiment(conv):
-        system_message = f"You are an expert in human emotion and a helpful assistant."
+        system_message = f"You are a helpful assistant."
         Prompt = \
         f"""
-        Analyze the sentiment of this customer agent conversation and evalute a sentiment score: 
-        
-        - if the customer is 'happy', give score of 1 
-        - if customer is 'neutral', give score of 0
-        - if 'unhappy', give score of -1.
+        Is the predominant sentiment in the following conversation positive, negative, or neutral?
 
-        <conversation>
-        {conv}
-        <conversation>
+        --------------------
+        conversation: {conv}
+        --------------------
 
-        Please return the sentiment score in the format of: sentiment score: `score`
+        Respond in one word: positive, negative, or neutral.
         """
+
         messages = [{"role":"system", "content":system_message},
                     {"role":"user", "content":Prompt}]
         response = deploy_client.predict(endpoint="databricks-dbrx-instruct", inputs={"messages": messages})
@@ -109,12 +106,84 @@ def sentiment(conversations: pd.Series) -> pd.Series:
     
     return pd.Series([get_sentiment(c) for c in conversations])
 
+
+@pandas_udf("string")
+def topic_classification(conversations: pd.Series) -> pd.Series:
+    import mlflow.deployments
+    deploy_client = mlflow.deployments.get_deploy_client("databricks")
+    topics_descr_list = \
+    """
+    car accident: customer involved in a car accident
+    policy change: customer would like change, update, or add on their policy or information
+    motorcrycle related: customer has a motorcycle related query
+    home accident: customer has a damage about their home such as kitchen, roof, bathroom, etc
+    general question: customer asked a general question on their insurance
+    theft incident: customer had things stolen from their cars and homes
+    """
+
+    def get_topic(conv):
+        system_message = f"You are a helpful assistant."
+        Prompt = \
+        f"""
+        what is the predominant topic in the below conversation? please include only one main topic from the provided list.
+
+        List of topics with descriptions (delimited with ":"):
+        {topics_descr_list}
+
+        --------------
+        Conversation: {conv}
+        --------------
+
+        Respond with one topic
+        """
+        messages = [{"role":"system", "content":system_message},
+                    {"role":"user", "content":Prompt}]
+        response = deploy_client.predict(endpoint="databricks-dbrx-instruct", inputs={"messages": messages})
+        return response.choices[0]['message']['content']
+    
+    return pd.Series([get_topic(c) for c in conversations])
+
+
+@udf(returnType=StringType())
+def get_short_topic(topic):
+    topics_descr_list = ["car accident", "policy change", "motorcycle related", "home accident", 
+                         "general question", "theft incident"]
+    for t in topics_descr_list:
+        if t in topic.lower():
+            return t
+    return "no topic"
+
 # COMMAND ----------
 
 transcript_df_with_summary = (transcript_df
                                 .withColumn("summary", summarizer("transcript"))
-                                .withColumn("sentiment", sentiment("transcript")))
+                                .withColumn("sentiment", sentiment("transcript"))
+                                .withColumn("topic", topic_classification("transcript")))
+
 display(transcript_df_with_summary)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Post-processing to create short class names
+
+# COMMAND ----------
+
+from pyspark.sql.functions import pandas_udf, col, udf, max, regexp_extract, regexp, cast, lower
+
+transcript_df_classification_final = transcript_df_with_summary \
+        .withColumn('sentiment_clean', lower(regexp_extract("sentiment", r'(?i)(positive|negative|neutral)', 0))) \
+        .withColumn('topic_clean', get_short_topic(col('topic')))
+        
+display(transcript_df_classification_final)
+
+# COMMAND ----------
+
+transcript_df_classification_final = transcript_df_classification_final \
+    .select("POLICY_NO", "transcript", "datetime_record", "MAKE", "MODEL", "DRV_DOB", "address", "summary", "sentiment_clean", "topic_clean")
+transcript_df_classification_final = transcript_df_classification_final \
+    .withColumnRenamed("sentiment_clean", "sentiment") \
+    .withColumnRenamed("topic_clean", "topic")
 
 # COMMAND ----------
 
@@ -127,12 +196,11 @@ display(transcript_df_with_summary)
 
 # COMMAND ----------
 
-(transcript_df_with_summary
-    .select("CUST_ID", "POLICY_NO", "pol_issue_date", "BODY", "MAKE", "MODEL", "PRODUCT", "MODEL_YEAR", "USE_OF_VEHICLE", "ZIP_CODE", "transcript", "summary", "sentiment")
+(transcript_df_classification_final
     .write
     .mode('overwrite')
     .option("overwriteSchema", "true")
-    .saveAsTable("customer_service_nlp"))
+    .saveAsTable("customer_service"))
 
 # COMMAND ----------
 
@@ -153,8 +221,8 @@ display(transcript_df_with_summary)
 
 # DBTITLE 1,To enable for vector db, we want to enable chage data feed table property
 # MAGIC %sql
-# MAGIC ALTER TABLE customer_service_nlp SET TBLPROPERTIES (delta.enableChangeDataFeed = true);
-# MAGIC DESCRIBE EXTENDED customer_service_nlp
+# MAGIC ALTER TABLE customer_service SET TBLPROPERTIES (delta.enableChangeDataFeed = true);
+# MAGIC DESCRIBE EXTENDED customer_service
 
 # COMMAND ----------
 

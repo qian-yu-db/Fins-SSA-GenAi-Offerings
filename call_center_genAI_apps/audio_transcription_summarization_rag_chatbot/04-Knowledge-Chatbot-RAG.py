@@ -26,7 +26,7 @@
 
 # COMMAND ----------
 
-table_name = "customer_service_nlp"
+table_name = "customer_service"
 
 spark.sql(f"USE CATALOG {catalog};")
 spark.sql(f"USE schema {db};")
