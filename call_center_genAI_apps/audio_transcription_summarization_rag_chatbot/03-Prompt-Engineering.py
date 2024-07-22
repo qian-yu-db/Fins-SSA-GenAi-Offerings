@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install mlflow==2.9.0
+# MAGIC %pip install mlflow
 # MAGIC %pip install tiktoken==0.5.1
 # MAGIC %pip install databricks-genai-inference langchain
 # MAGIC %pip install --upgrade databricks-sdk
@@ -96,7 +96,7 @@ def sentiment(conversations: pd.Series) -> pd.Series:
         conversation: {conv}
         --------------------
 
-        Respond in one word: positive, negative, or neutral.
+        Respond in one word: positive, negative, or neutral. DO NOT EXPLAIN!
         """
 
         messages = [{"role":"system", "content":system_message},
@@ -134,7 +134,7 @@ def topic_classification(conversations: pd.Series) -> pd.Series:
         Conversation: {conv}
         --------------
 
-        Respond with one topic
+        Respond with one topic. DO NOT EXPLAIN!
         """
         messages = [{"role":"system", "content":system_message},
                     {"role":"user", "content":Prompt}]
@@ -229,7 +229,3 @@ transcript_df_classification_final = transcript_df_classification_final \
 # MAGIC %md
 # MAGIC
 # MAGIC Next Step, we create a RAG Chatbot with [Notebook 04-Knowledge-Chatbot-RAG]($./04-Knowledge-Chatbot-RAG)
-
-# COMMAND ----------
-
-

@@ -60,6 +60,7 @@ print(f"Use Vector Search Endpoint name: {VECTOR_SEARCH_ENDPOINT_NAME}")
 # MAGIC * `wait_for_vs_endpoint_to_be_ready()`: wait until the vector index endpoint is ready to be queried
 # MAGIC * `wait_for_index_to_be_ready()`: wait for vector index to be ready
 # MAGIC * `get_endpoint_status()`: collect endpoint status
+# MAGIC * `wait_for_model_serving_endpoint_to_be_ready()`: wait for model serving endpoint to be ready
 
 # COMMAND ----------
 
@@ -155,7 +156,59 @@ def get_endpoint_status(endpoint_name):
                         "Please create an endpoint with Inference Tables enabled before running this notebook.")
 
     return response
+  
+def wait_for_model_serving_endpoint_to_be_ready(ep_name):
+  from databricks.sdk import WorkspaceClient
+  from databricks.sdk.service.serving import EndpointStateReady, EndpointStateConfigUpdate
+  import time
+
+  # TODO make the endpoint name as a param
+  # Wait for it to be ready
+  w = WorkspaceClient()
+  state = ""
+  for i in range(200):
+      state = w.serving_endpoints.get(ep_name).state
+      if state.config_update == EndpointStateConfigUpdate.IN_PROGRESS:
+          if i % 40 == 0:
+              print(f"Waiting for endpoint to deploy {ep_name}. Current state: {state}")
+          time.sleep(10)
+      elif state.ready == EndpointStateReady.READY:
+        print('endpoint ready.')
+        return
+      else:
+        break
+  raise Exception(f"Couldn't start the endpoint, timeout, please check your endpoint for more details: {state}")
 
 # COMMAND ----------
 
+def deduplicate_assessments_table(assessment_table):
+    # De-dup response assessments
+    assessments_request_deduplicated_df = spark.sql(f"""select * except(row_number)
+                                        from ( select *, row_number() over (
+                                                partition by request_id
+                                                order by
+                                                timestamp desc
+                                            ) as row_number from {assessment_table} where text_assessment is not NULL
+                                        ) where row_number = 1""")
+    # De-dup the retrieval assessments
+    assessments_retrieval_deduplicated_df = spark.sql(f"""select * except( retrieval_assessment, source, timestamp, text_assessment, schema_version),
+        any_value(timestamp) as timestamp,
+        any_value(source) as source,
+        collect_list(retrieval_assessment) as retrieval_assessments
+      from {assessment_table} where retrieval_assessment is not NULL group by request_id, source.id, step_id"""    )
 
+    # Merge together
+    assessments_request_deduplicated_df = assessments_request_deduplicated_df.drop("retrieval_assessment", "step_id")
+    assessments_retrieval_deduplicated_df = assessments_retrieval_deduplicated_df.withColumnRenamed("request_id", "request_id2").withColumnRenamed("source", "source2").drop("step_id", "timestamp")
+
+    merged_deduplicated_assessments_df = assessments_request_deduplicated_df.join(
+        assessments_retrieval_deduplicated_df,
+        (assessments_request_deduplicated_df.request_id == assessments_retrieval_deduplicated_df.request_id2) &
+        (assessments_request_deduplicated_df.source.id == assessments_retrieval_deduplicated_df.source2.id),
+        "full"
+    ).select(
+        [str(col) for col in assessments_request_deduplicated_df.columns] +
+        [assessments_retrieval_deduplicated_df.retrieval_assessments]
+    )
+
+    return merged_deduplicated_assessments_df

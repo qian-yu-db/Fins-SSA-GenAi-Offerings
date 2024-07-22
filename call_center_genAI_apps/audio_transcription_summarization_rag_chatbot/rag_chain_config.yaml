@@ -1,0 +1,36 @@
+databricks_resources:
+  llm_endpoint_name: databricks-dbrx-instruct
+  vector_search_endpoint_name: rag_endpoint_qyu
+input_example:
+  messages:
+  - content: car accident
+    role: user
+llm_config:
+  llm_parameters:
+    max_tokens: 500
+    temperature: 0.01
+  llm_prompt_template: 'You are a trusted insurance company Support Assistant that
+    help representatives assist customers with their home, auto or life policies and
+    claims. You helps answer questions based only on the provided information. If
+    you do not know the answer to a question, you truthfully say you do not know.  Here
+    is some context which might or might not help you answer: {context}.  Answer directly,
+    do not repeat the question, do not start with something like: the answer to the
+    question, do not add AI in front of your answer, do not say: here is the answer,
+    do not mention the context or the question. Based on this context, answer this
+    question: {question}'
+  llm_prompt_template_variables:
+  - context
+  - question
+retriever_config:
+  chunk_template: 'Passage: {chunk_text}
+
+    '
+  data_pipeline_tag: poc
+  parameters:
+    k: 5
+    query_type: ann
+  schema:
+    chunk_text: summary
+    document_uri: topic
+    primary_key: POLICY_NO
+  vector_search_index: qyu.test.customer_service_vs_index
