@@ -21,10 +21,10 @@
 ### Step 2. Perform LLM Summarization, Sentiment Analysis and Classification with [Databricks SQL AI Fundations](https://docs.databricks.com/en/large-language-models/ai-functions.html)
 
 * Run notebook **`02-GenAI-Text-Classification`** to perform summarization and sentiment analysis task using prompt enginering in batch with the Databricks DBRX foundation model
-* We can create Lakehouse Dashboard based on the analysises performed by the AI functions.
+* We can create Lakehouse Dashboard (example below) based on the analysises performed by the AI functions.
   ![image](../../imgs/dashboard_preview.png)
 
-  * Here is the [example lakeview dashboard template](./customer_service_quality_dashboard.lvdash.json). To import the dashboard template to your workspace, please refer to [this script](../../scripts/dashboard_utils.py)
+  * Here is a [example lakeview dashboard template](./customer_service_quality_dashboard.lvdash.json). To import the dashboard template to your workspace, please refer to [this script](../../scripts/dashboard_utils.py)
 
 ### Step 3. Using DBSQL Agent to ask question on the data 
 
