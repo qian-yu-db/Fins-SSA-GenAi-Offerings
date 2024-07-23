@@ -23,10 +23,9 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 
 | Input Data Types | Input Data Store  | chunking performed | OSS Technolgoy | Component Asset  |
 |------------------|-------------------|--------------------|----------------|---------------|
-| JSON Text Transcripts | Unity Catalog Volum |  NO | N/A | WIP |
-| Audio WAV file | Unity Catalog Volum | NO| [Whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) | WIP |
-| PDF Doc (machine generated) | Unity Catalog Volum | [Unstructured chunking strategy](https://docs.unstructured.io/open-source/core-functionality/chunking) | [Unstructured](https://docs.unstructured.io/open-source/introduction/overview) | WIP |
-| PDF Doc (with tables) |  Unity Catalog Volum | [Unstructured chunking strategy](https://docs.unstructured.io/open-source/core-functionality/chunking) | [Unstructured](https://docs.unstructured.io/open-source/introduction/overview) | WIP |
+| JSON Text Transcripts | Unity Catalog Volum |  None | None | Json Data Ingestion with [DLT (python)](./Data_Ingestion/DLT-Transcript-Policy-Ingestion-Python.py), [DLT (SQL)](./Data_Ingestion/DLT-Transcript-Policy-Ingestion-SQL.sql)||
+| PDF Doc (with tables) | Unity Catalog Volum | [Unstructured chunking strategy](https://docs.unstructured.io/open-source/core-functionality/chunking) | [Unstructured](https://docs.unstructured.io/open-source/introduction/overview) | [PDF Doc Ingestion](./Data_Ingestion/PDF-Text-Table-Ingestion.py)  |
+| Image Doc (text extraction) |  Unity Catalog Volum | [Unstructured chunking strategy](https://docs.unstructured.io/open-source/core-functionality/chunking) | [Unstructured](https://docs.unstructured.io/open-source/introduction/overview) | [Image Doc Ingestion](./Data_Ingestion/Image-Text-Ingestion.py) |
 
 
 ## End to End GenAI Application Architecture Patterns 
