@@ -24,4 +24,4 @@
 
 ### Step 3. RAG Chatbot with Databricks DBRX Fundation LLM
 
-* Run notebook **`03-Knowledge-Chatbot-RAG`** to create a vector search index using the result delta table of the previous notebook **`02-Prompt-Engineerin`**, we then build a RAG Chatbot with the Databricks DBRX foundation model using the vector search index as context. Lastly, we deploy the chat model to Databricks Model Serving Endpoint
+* Run notebook **`03-Knowledge-Chatbot-RAG`** to create a vector search index using the result delta table of the previous notebook **`03-Prompt-Engineering`**, we then build a RAG Chatbot with the Databricks DBRX foundation model using the vector search index as context. Lastly, we deploy the chat model to Databricks Model Serving Endpoint using Mosaic agent framework which creates a review app for the expert review process

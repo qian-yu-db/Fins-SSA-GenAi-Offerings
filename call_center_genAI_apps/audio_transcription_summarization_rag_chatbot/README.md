@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![image](../../imgs/audio_transcription_rag_v2.png)
+![image](../../imgs/audio_rag_agent_fw.png)
 
 ## Please Follow the Steps Below:
 
@@ -41,9 +41,8 @@
 
 ### Step 4. RAG Chatbot with Databricks DBRX Fundation LLM
 
-* Run notebook **`04-Knowledge-Chatbot-RAG`** to create a vector search index using the result delta table of the previous notebook **`03-Prompt-Engineerin`**, we then build a RAG Chatbot with the Databricks DBRX foundation model using the vector search index as context. Lastly, we deploy the chat model to Databricks Model Serving Endpoint
-* Enable inference table for the RAG Chatbot model so we can monitor the model metrics
+* Run notebook **`04-Knowledge-Chatbot-RAG`** to create a vector search index using the result delta table of the previous notebook **`03-Prompt-Engineerin`**, we then build a RAG Chatbot with the Databricks DBRX foundation model using the vector search index as context. Lastly, we deploy the chat model to Databricks Model Serving Endpoint using Mosaic agent framework which creates a review app for the expert review process
 
-### Step 5. RAG Chatbot with Databricks DBRX Fundation LLM
+### Step 5. Offline Evaluation with Inference Table
 
-* Run notebook **`05-Inference-Table-Monitoring-LLM-Metrics`** for process and calculate LLM metrics and enable lakehouse monitoring to create a dashboard for tracking the LLM metrics
+* Run notebook **`05-Offline-Evaluation`** for offline evaluate by leveraging inference table

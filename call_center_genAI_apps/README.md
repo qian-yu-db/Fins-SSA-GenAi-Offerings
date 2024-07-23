@@ -13,3 +13,4 @@ The goal is to give Databricks’ customers a blueprint to start a POC for more 
 
 1. [Extract Intelligence from raw call center transcripts using RAG](./transcripts_summarization_rag_chatbot/)
 2. [Extract Intelligence from raw call center audio using RAG](./audio_transcription_summarization_rag_chatbot/)
+3. [Perform AI assisted Analytics from raw call center transcripts using AI functions and DBSQL agents](./transcripts_analytics_with_AI/)

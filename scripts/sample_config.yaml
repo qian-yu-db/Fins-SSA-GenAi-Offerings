@@ -1,0 +1,6 @@
+task: import
+host: https://e2-demo-field-eng.cloud.databricks.com
+token: xxxxxxxx
+template_path: ../call_center_genAI_apps/transcripts_analytics_with_AI/customer_service_quality_dashboard.lvdash.json
+workspace_path: /Workspace/Users/q.yu@databricks.com/
+dashboard_name: customer_service_analysis
