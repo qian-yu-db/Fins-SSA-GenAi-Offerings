@@ -31,11 +31,12 @@ The goal of this repo is to develop and deliver GenAI solutions to enable and ac
 ## End to End GenAI Application Architecture Patterns 
 
 
-| Input Data  | Model     | Tasks           | GenAI Use Case | Orchestration | Customer Persona | PoC Template     |
-|-------------|-----------|-----------------|----------------|--------------|----------------------|-------------------|
-| JSON Text Transcripts | Foundation LLM (e.g. DBRX) | Summarization, Sentiment, classification | AI Function, DBSQL Agent | DLT, LangChain | Data Analyist, Data Scientist | [Call Center Transcript Analytics with AI](./call_center_genAI_apps/transcripts_analytics_with_AI/) |
-| JSON Text Transcripts | Foundation LLM (e.g. DBRX) | Summarization, Sentiment | RAG | DLT, LangChain | Data Scientist, MLE, Data Engineer | [Call Center Transcript RAG Apps](./call_center_genAI_apps/transcripts_summarization_rag_chatbot/) |
-| wav Audio | Foundation LLM (e.g. DBRX) | Speech Transcription, Summarization, Sentiment | RAG | DLT, LangChain | Data Scientist, MLE, Data Engineer | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
+| Input Data            | Model                          | Tasks                                                            | GenAI Use Case           | Orchestration         | Customer Persona | PoC Template                                                                                                  |
+|-----------------------|--------------------------------|------------------------------------------------------------------|--------------------------|-----------------------|----------------------|---------------------------------------------------------------------------------------------------------------|
+| JSON Text Transcripts | Foundation LLM (e.g. Llama3p1) | ummarization, Sentiment, classification                          | AI Function, DBSQL Agent | DLT, LangChain        | Data Analyist, Data Scientist | [Call Center Transcript Analytics with AI](./call_center_genAI_apps/transcripts_analytics_with_AI/)           |
+| JSON Text Transcripts | Foundation LLM (e.g. Llama3p1) | ummarization, Sentiment                                          | RAG                      | DLT, LangChain        | Data Scientist, MLE, Data Engineer | [Call Center Transcript RAG Apps](./call_center_genAI_apps/transcripts_summarization_rag_chatbot/)            |
+| wav Audio             | Foundation LLM (e.g. Llama3p1) | Speech Transcription, Summarization, Sentiment                   | RAG                      | DLT, LangChain        | Data Scientist, MLE, Data Engineer | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summariztaion_rag_chatbot/) |
+| PDF Documents         | Foundation LLM (e.g. Llama3p1) | Unstructured Data Processing, Name Entity Recognition | NER | DLT, Function calling | Data Scientist, MLE, Data Engineer | [Call Center Audio to Text RAG Apps](./call_center_genAI_apps/audio_transcription_summarization_rag_chatbot/) |
 
  
 

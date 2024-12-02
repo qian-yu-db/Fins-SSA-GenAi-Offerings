@@ -4,6 +4,8 @@
 
 This series of notebooks, we shows how to ingest semi-unstructured and structured documents with Databricks Medallion architecture. For unstructured data (pdfs, images, etc), we currently leverage Unstructred OSS API to perform OCR, partition, and extract components (see architecture diagram below)
 
+### Data Ingestion 
+
   ![image](../imgs/data_ingest_unstructured.png)
 
 ## Templates
