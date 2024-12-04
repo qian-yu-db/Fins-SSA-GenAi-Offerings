@@ -73,4 +73,3 @@ Clone this repo and add the repo to your Databricks Workspace. Refer to [Databri
 * The PoC accelerator template is designed for use Unit Catalog managed workspace only.
 * The synthetic dataset provided by Databricks are generated algorithmatically based on assumptions and they are not real-life data.
 * Delta Live Table technology from Databricks is used in some of PoC Accelerator Template, Currently the live table (a.k.a materialized view) from Delta Live Table cannot only be accessed by shared clusters, therefore, a copy of the materialized views are being used in some of notebooks. The limitation will be addressed in the future product releases
-
