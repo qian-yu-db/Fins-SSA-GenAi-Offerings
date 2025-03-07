@@ -9,19 +9,17 @@
 
 # COMMAND ----------
 
-catalog = "qyu"
-dbName = db = "test"
+catalog = "fins_genai"
+schema = "call_center"
 volume_name_policies = "volume_policies"
-volume_name_audio = "volume_speech"
-volume_name_rag = "volume_rag"
-VECTOR_SEARCH_ENDPOINT_NAME = "rag_endpoint_qyu"
+volume_name_transcripts = "volume_transcripts"
+VECTOR_SEARCH_ENDPOINT_NAME = "one-env-shared-endpoint-1"
 
 # COMMAND ----------
 
-def use_and_create_db(catalog, dbName, cloud_storage_path = None):
-  print(f"USE CATALOG `{catalog}`")
+def use_and_create_db(catalog, schema, cloud_storage_path = None):
   spark.sql(f"USE CATALOG `{catalog}`")
-  spark.sql(f"""create database if not exists `{dbName}` """)
+  spark.sql(f"""create schema if not exists `{schema}`;""")
 
 assert catalog not in ['hive_metastore', 'spark_catalog']
 
@@ -32,21 +30,20 @@ if len(catalog) > 0:
     catalogs = [r['catalog'] for r in spark.sql("SHOW CATALOGS").collect()]
     if catalog not in catalogs:
       spark.sql(f"CREATE CATALOG IF NOT EXISTS `{catalog}`")
-  use_and_create_db(catalog, dbName)
+  use_and_create_db(catalog, schema)
 
 # COMMAND ----------
 
 spark.sql(f'USE CATALOG {catalog};')
-spark.sql(f'USE SCHEMA {db};')
+spark.sql(f'USE SCHEMA {schema};')
 
 print("---------------")
 print("Current Setup")
 print("---------------")
 print(f"Use Catalog: {catalog}")
-print(f"Use Schema: {db}")
-print(f"Use Volumes for policy data: {volume_name_audio}")
-print(f"Use Volumes for speech data: {volume_name_policies}")
-print(f"Use Volumes for policy data: {volume_name_rag}")
+print(f"Use Schema: {schema}")
+print(f"Use Volumes for policy data: {volume_name_policies}")
+print(f"Use Volumes for transcript data: {volume_name_transcripts}")
 print(f"Use Vector Search Endpoint name: {VECTOR_SEARCH_ENDPOINT_NAME}")
 
 # COMMAND ----------
@@ -57,6 +54,7 @@ print(f"Use Vector Search Endpoint name: {VECTOR_SEARCH_ENDPOINT_NAME}")
 # MAGIC
 # MAGIC * `get_latest_model_version()`: Return the latest model version
 # MAGIC * `index_exists()`: Check whether a vector index already exists
+# MAGIC * `endpoint_exists()`: Check whether an endpoint already exists
 # MAGIC * `wait_for_vs_endpoint_to_be_ready()`: wait until the vector index endpoint is ready to be queried
 # MAGIC * `wait_for_index_to_be_ready()`: wait for vector index to be ready
 # MAGIC * `get_endpoint_status()`: collect endpoint status
@@ -178,37 +176,3 @@ def wait_for_model_serving_endpoint_to_be_ready(ep_name):
       else:
         break
   raise Exception(f"Couldn't start the endpoint, timeout, please check your endpoint for more details: {state}")
-
-# COMMAND ----------
-
-def deduplicate_assessments_table(assessment_table):
-    # De-dup response assessments
-    assessments_request_deduplicated_df = spark.sql(f"""select * except(row_number)
-                                        from ( select *, row_number() over (
-                                                partition by request_id
-                                                order by
-                                                timestamp desc
-                                            ) as row_number from {assessment_table} where text_assessment is not NULL
-                                        ) where row_number = 1""")
-    # De-dup the retrieval assessments
-    assessments_retrieval_deduplicated_df = spark.sql(f"""select * except( retrieval_assessment, source, timestamp, text_assessment, schema_version),
-        any_value(timestamp) as timestamp,
-        any_value(source) as source,
-        collect_list(retrieval_assessment) as retrieval_assessments
-      from {assessment_table} where retrieval_assessment is not NULL group by request_id, source.id, step_id"""    )
-
-    # Merge together
-    assessments_request_deduplicated_df = assessments_request_deduplicated_df.drop("retrieval_assessment", "step_id")
-    assessments_retrieval_deduplicated_df = assessments_retrieval_deduplicated_df.withColumnRenamed("request_id", "request_id2").withColumnRenamed("source", "source2").drop("step_id", "timestamp")
-
-    merged_deduplicated_assessments_df = assessments_request_deduplicated_df.join(
-        assessments_retrieval_deduplicated_df,
-        (assessments_request_deduplicated_df.request_id == assessments_retrieval_deduplicated_df.request_id2) &
-        (assessments_request_deduplicated_df.source.id == assessments_retrieval_deduplicated_df.source2.id),
-        "full"
-    ).select(
-        [str(col) for col in assessments_request_deduplicated_df.columns] +
-        [assessments_retrieval_deduplicated_df.retrieval_assessments]
-    )
-
-    return merged_deduplicated_assessments_df

@@ -11,12 +11,14 @@
 
 # MAGIC %md
 # MAGIC
-# MAGIC ## Set `reset_all_data` to `True` to clean up existing data
+# MAGIC ## Set `reset_all_data` to `true` to clean up existing data
 
 # COMMAND ----------
 
 dbutils.widgets.text("reset_all_data", "false", "Reset Data")
 reset_all_data = dbutils.widgets.get("reset_all_data") == "true"
+if reset_all_data:
+    print("We will delete and recreate all data!")
 
 # COMMAND ----------
 
@@ -24,12 +26,12 @@ import os
 import requests
 
 spark.sql(f'USE CATALOG {catalog};')
-spark.sql(f'USE SCHEMA {db};')
-spark.sql(f'CREATE VOLUME IF NOT EXISTS {volume_name_audio};')
+spark.sql(f'USE SCHEMA {schema};')
+spark.sql(f'CREATE VOLUME IF NOT EXISTS {volume_name_transcripts};')
 spark.sql(f'CREATE VOLUME IF NOT EXISTS {volume_name_policies};')
-volume_folder_policy = f"/Volumes/{catalog}/{db}/{volume_name_policies}"
-volume_folder_speech = f"/Volumes/{catalog}/{db}/{volume_name_audio}"
-policy_sub = "Policies"
+volume_folder_policy = f"/Volumes/{catalog}/{schema}/{volume_name_policies}"
+volume_folder_speech = f"/Volumes/{catalog}/{schema}/{volume_name_transcripts}"
+policy_sub = "policies"
 transcript_sub = "transcripts_json_data"
 
 # COMMAND ----------
@@ -81,7 +83,6 @@ def download_file_from_git(dest, owner, repo, path):
 
 # COMMAND ----------
 
-    
 repo_owner = 'qian-yu-db'
 repo_name = 'Fins-SSA-GenAi-Offerings'
 
@@ -102,7 +103,3 @@ else:
 # MAGIC %md
 # MAGIC
 # MAGIC Next Step: Create a DLT Pipeline with [Notebook 01-DLT-Tanscript-Policy]($./01-DLT-Transcript-Policy)
-
-# COMMAND ----------
-
-
