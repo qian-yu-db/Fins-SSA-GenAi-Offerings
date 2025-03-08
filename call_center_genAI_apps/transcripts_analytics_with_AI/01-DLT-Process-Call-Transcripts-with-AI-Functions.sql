@@ -128,7 +128,7 @@ SELECT
   p.last_name,
   p.email,
   p.phone_number,
-  t.call_timestamp,
+  to_timestamp(t.call_timestamp, 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'') as call_timestamp,  
   ai_summarize(
     t.transcript,
     300

@@ -1,0 +1,12 @@
+command: [
+  "python", 
+  "app.py"
+]
+
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    valueFrom: "sql_warehouse"
+  - name: "SERVING_ENDPOINT-cs-agent"
+    valueFrom: "serving_endpoint"
+  - name: "SERVING_ENDPOINT-doc-rag"
+    valueFrom: "serving_endpoint-2"
