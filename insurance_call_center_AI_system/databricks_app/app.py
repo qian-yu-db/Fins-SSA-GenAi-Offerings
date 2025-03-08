@@ -1,4 +1,4 @@
-from databricks.sdk.service.serving import ChatMessage, ChatMessageRole
+from mlflow.deployments import get_deploy_client
 import pandas as pd
 from databricks import sql
 from databricks.sdk.core import Config
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize the Databricks Workspace Client
-w = WorkspaceClient()
+client = get_deploy_client("databricks")
 
 # Ensure environment variable is set correctly
 assert os.getenv('SERVING_ENDPOINT-cs-agent'), "SERVING_ENDPOINT-cs-agent must be set in app.yaml."
@@ -49,7 +49,7 @@ def filter_customer_profile(df, start_time, end_time, phone_number):
 
 def process_input(user_input):
     # Process the user input if needed
-    return f"Write a email response to caller {user_input} base on the last conversation?"
+    return f"Write a email response to caller {user_input} base on the last call transcript?"
 
 def respond_cs_agent(message, history=False):
     endpoint = os.getenv('SERVING_ENDPOINT-cs-agent')
@@ -59,21 +59,20 @@ def respond_cs_agent(message, history=False):
         messages = []
         if history:
             for human, assistant in history:
-                messages.append(ChatMessage(content=human, role=ChatMessageRole.USER))
-                messages.append(
-                    ChatMessage(content=assistant, role=ChatMessageRole.ASSISTANT)
-                )
-        messages.append(ChatMessage(content=message, role=ChatMessageRole.USER))
-        response = w.serving_endpoints.query(
-            name=endpoint,
-            messages=messages,
-            temperature=0.0,
-            max_tokens=500,
-            stream=False,
+                messages.append({"role": "user", "content": human})
+                messages.append({"role": "assistant", "content": assistant})
+        messages.append({"role": "user", "content": message})
+        response = client.predict(
+            endpoint=endpoint,
+            inputs={
+                "messages": messages,
+                "temperature": 0.0,
+                "max_tokens": 500,
+            },
         )
     except Exception as error:
         return f"ERROR requesting endpoint {endpoint}: {error}"
-    return response.choices[0].message.content
+    return response['messages'][-1]['content']
 
 
 def respond_policy_doc_rag(message, history=True):
@@ -84,23 +83,20 @@ def respond_policy_doc_rag(message, history=True):
         messages = []
         if history:
             for human, assistant in history:
-                messages.append(ChatMessage(content=human, role=ChatMessageRole.USER))
-                messages.append(
-                    ChatMessage(content=assistant, role=ChatMessageRole.ASSISTANT)
-                )
-        messages.append(ChatMessage(content=message, role=ChatMessageRole.USER))
-        response = w.serving_endpoints.query(
-            name=endpoint,
-            messages=messages,
-            temperature=0.0,
-            max_tokens=250,
-            stream=False,
+                messages.append({"role": "user", "content": human})
+                messages.append({"role": "assistant", "content": assistant})
+        messages.append({"role": "user", "content": message})
+        response = client.predict(
+            endpoint=endpoint,
+            inputs={
+                "messages": messages,
+                "temperature": 0.0,
+                "max_tokens": 500,
+            },
         )
-        print(f"messages: {messages}")
-        print(f"response: {response}")
     except Exception as error:
         return f"ERROR requesting endpoint {endpoint}: {error}"
-    return response.choices[0].message.content
+    return response['messages'][-1]['content']
 
 theme = gr.themes.Soft(
     text_size=sizes.text_sm,
@@ -129,18 +125,18 @@ with gr.Blocks() as app:
             gr.Markdown("# Databricks App - Insurance Operator AI Assistant")
             gr.Markdown("## How can I help you?")
             with gr.Row():
-                btn1 = gr.Button("Improve Customer Happiness", variant="primary")
-                btn2 = gr.Button("Answer Policy Questions", variant="primary")
+                btn1 = gr.Button("Customer Response", variant="primary")
+                btn2 = gr.Button("Policy Lookup", variant="primary")
         
         # Improve Customer Happiness Tab
-        with gr.Tab(label="Improve Customer Happiness", id=1):
+        with gr.Tab(label="Customer Response", id=1):
             with gr.Row():
                 with gr.Column(scale=1):
-                    gr.Markdown("### Unhappy Customer details by Caller ID")
+                    gr.Markdown("### Here are the Unhappy Customers: select by phone number")
                     start_date = gr.DateTime(label="Start Date", value='2024-01-01 00:00:00')
                     end_date = gr.DateTime(label="End Date", value='2024-12-31 00:00:00')
-                    phone_number_selector = gr.Dropdown(list(df['phone_number'].values), label="Caller ID")
-                    customer_name_output = gr.Textbox(label="Customer Name", placeholder="Customer name")
+                    phone_number_selector = gr.Dropdown(list(df['phone_number'].values), label="Phone Number")
+                    customer_name_output = gr.Textbox(label="Customer Name", placeholder="Customer Name")
                     tenancy_output = gr.Textbox(label="Customer Tenancy", placeholder="Customer Tenancy")
                     email_output = gr.Textbox(label="Email", placeholder="Email")
                     policy_number_output = gr.Textbox(label="Policy Number", placeholder="Policy Number")
@@ -149,7 +145,7 @@ with gr.Blocks() as app:
                     def update_filter(start_date, end_date, phone_number_selector):
                         return filter_customer_profile(df, start_date, end_date, phone_number_selector)
                     process_btn = gr.Button("Process Current Customer")
-                    output_box_process_btn = gr.Textbox(label="CRM action")
+                    output_box_process_btn = gr.Textbox(label="Write a Response")
 
                 process_btn.click(
                     process_input, 
@@ -160,7 +156,8 @@ with gr.Blocks() as app:
                 with gr.Column(scale=3):
                     gr.Markdown("# Databricks App - Customer Service CRM Assistant")
                     gr.Markdown("## Instruction")
-                    gr.Markdown("1. Select a customer from the Caller ID dropdown list")
+                    gr.Markdown("1. Filter the start and end date for the calls")
+                    gr.Markdown("1. Select a customer from the Phone Number dropdown list")
                     gr.Markdown("2. Click on the Process Current Customer button")
                     gr.Markdown("3. Click on the Submit button")
                     chat_interface = gr.ChatInterface(
