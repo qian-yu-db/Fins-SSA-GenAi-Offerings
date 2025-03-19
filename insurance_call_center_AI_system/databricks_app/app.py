@@ -122,8 +122,22 @@ with gr.Blocks() as app:
     with gr.Tabs(selected=0) as main_tabs:
         # Main Menu Tab
         with gr.Tab(label="Main Menu", id=0):
-            gr.Markdown("# Databricks App - Insurance Operator AI Assistant")
-            gr.Markdown("## How can I help you?")
+            with gr.Column(scale=1):
+                gr.HTML("""
+                    <div style="display:flex; justify-content:center; margin-bottom:10px">
+                        <span style="font-size:80px">🤖</span>
+                    </div>
+                """)
+            gr.Markdown("""
+                ## Welcome to the Insurance Operator AI Assistant!
+                
+                I'm here to help you with Insurance Operations.
+                
+                ### How to use this tool:
+                * Select one of the options below to begin
+                * Follow the instructions on the next screen
+                * Return to this menu anytime using the back button
+            """)
             with gr.Row():
                 btn1 = gr.Button("Customer Response", variant="primary")
                 btn2 = gr.Button("Policy Lookup", variant="primary")

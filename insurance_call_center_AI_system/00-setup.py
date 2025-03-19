@@ -16,6 +16,9 @@
 # COMMAND ----------
 
 dbutils.widgets.text("reset_all_data", "false", "Reset Data")
+
+# COMMAND ----------
+
 reset_all_data = dbutils.widgets.get("reset_all_data") == "true"
 if reset_all_data:
     print("We will delete and recreate all data!")
@@ -32,6 +35,7 @@ spark.sql(f'CREATE VOLUME IF NOT EXISTS {volume_name_policies};')
 volume_folder_policy = f"/Volumes/{catalog}/{schema}/{volume_name_policies}"
 volume_folder_speech = f"/Volumes/{catalog}/{schema}/{volume_name_transcripts}"
 policy_sub = "policies"
+policy_doc_sub = "policy_doc"
 transcript_sub = "transcripts_json_data"
 
 # COMMAND ----------
@@ -40,6 +44,10 @@ if reset_all_data:
     try:
         dbutils.fs.rm(f'{volume_folder_policy}', True)
         dbutils.fs.rm(f'{volume_folder_speech}', True)
+        spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.raw_policies;")
+        spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.raw_transcripts;")
+        spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.call_center_transcripts_cleaned;")
+        spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.call_center_transcripts_analysis_gold;")
     except Exception as e:
       print(f'Could not clean folders, they might not exist? {e}')
 
@@ -86,11 +94,17 @@ def download_file_from_git(dest, owner, repo, path):
 repo_owner = 'qian-yu-db'
 repo_name = 'Fins-SSA-GenAi-Offerings'
 
-if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or is_folder_empty(f"{volume_folder_speech}/{transcript_sub}"):
+if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or \
+    is_folder_empty(f"{volume_folder_policy}/{policy_doc_sub}") or \
+    is_folder_empty(f"{volume_folder_speech}/{transcript_sub}"):
     download_file_from_git(dest=f'{volume_folder_policy}/{policy_sub}', 
                            owner=repo_owner, 
                            repo=repo_name, 
                            path="/datasets/insurance_policies")
+    download_file_from_git(dest=f'{volume_folder_policy}/{policy_doc_sub}', 
+                           owner=repo_owner, 
+                           repo=repo_name, 
+                           path="/datasets/insurance_policy_doc")
     download_file_from_git(dest=f'{volume_folder_speech}/{transcript_sub}', 
                            owner=repo_owner, 
                            repo=repo_name, 

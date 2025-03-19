@@ -13,7 +13,7 @@ from langchain_core.tools import BaseTool
 from langgraph.graph import END, StateGraph
 from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.prebuilt.tool_executor import ToolExecutor
+from langgraph.prebuilt.tool_node import ToolNode
 from mlflow.langchain.chat_agent_langgraph import ChatAgentState, ChatAgentToolNode
 from mlflow.pyfunc import ChatAgent
 from mlflow.types.agent import (
@@ -71,7 +71,7 @@ tools.extend(vector_search_tools)
 
 def create_tool_calling_agent(
     model: LanguageModelLike,
-    tools: Union[ToolExecutor, Sequence[BaseTool]],
+    tools: Union[ToolNode, Sequence[BaseTool]],
     system_prompt: Optional[str] = None,
 ) -> CompiledGraph:
     model = model.bind_tools(tools)
