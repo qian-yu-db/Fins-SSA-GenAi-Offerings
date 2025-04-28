@@ -1,5 +1,5 @@
 from typing import Any, Generator, Optional, Sequence, Union
-
+import uuid
 import mlflow
 from databricks_langchain import ChatDatabricks, VectorSearchRetrieverTool
 from databricks_langchain.uc_ai import (
@@ -8,6 +8,7 @@ from databricks_langchain.uc_ai import (
     set_uc_function_client,
 )
 from langchain_core.language_models import LanguageModelLike
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.tools import BaseTool
 from langgraph.graph import END, StateGraph
@@ -75,6 +76,7 @@ def create_tool_calling_agent(
     system_prompt: Optional[str] = None,
 ) -> CompiledGraph:
     model = model.bind_tools(tools)
+    memory = MemorySaver()
 
     # Define the function that determines which node to go to
     def should_continue(state: ChatAgentState):
@@ -95,10 +97,15 @@ def create_tool_calling_agent(
         preprocessor = RunnableLambda(lambda state: state["messages"])
     model_runnable = preprocessor | model
 
+    # def chat_history_cutoff(state: ChatAgentState):
+    #     state['messages'] = state['messages'][-5:]
+    #     return state
+
     def call_model(
         state: ChatAgentState,
         config: RunnableConfig,
     ):
+        #state = chat_history_cutoff(state)
         response = model_runnable.invoke(state, config)
 
         return {"messages": [response]}
@@ -119,7 +126,7 @@ def create_tool_calling_agent(
     )
     workflow.add_edge("tools", "agent")
 
-    return workflow.compile()
+    return workflow.compile(checkpointer=memory)
 
 
 class LangGraphChatAgent(ChatAgent):
@@ -135,7 +142,8 @@ class LangGraphChatAgent(ChatAgent):
         request = {"messages": self._convert_messages_to_dict(messages)}
 
         messages = []
-        for event in self.agent.stream(request, stream_mode="updates"):
+        config = {"configurable": {"thread_id": "1"}}
+        for event in self.agent.stream(request, config, stream_mode="updates"):
             for node_data in event.values():
                 messages.extend(
                     ChatAgentMessage(**msg) for msg in node_data.get("messages", [])
@@ -149,7 +157,8 @@ class LangGraphChatAgent(ChatAgent):
         custom_inputs: Optional[dict[str, Any]] = None,
     ) -> Generator[ChatAgentChunk, None, None]:
         request = {"messages": self._convert_messages_to_dict(messages)}
-        for event in self.agent.stream(request, stream_mode="updates"):
+        config = {"configurable": {"thread_id": "1"}}
+        for event in self.agent.stream(request, config, stream_mode="updates"):
             for node_data in event.values():
                 yield from (
                     ChatAgentChunk(**{"delta": msg}) for msg in node_data["messages"]

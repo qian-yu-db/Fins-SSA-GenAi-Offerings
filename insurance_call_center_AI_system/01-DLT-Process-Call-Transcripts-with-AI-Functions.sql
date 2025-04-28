@@ -77,6 +77,7 @@ SELECT
   p.policy_number,
   p.address,
   t.operator_id,
+  t.call_duration_in_sec,
   t.call_timestamp,
   t.phone_number,
   t.transcript
@@ -88,18 +89,22 @@ inner join stream(live.raw_transcripts) t on p.phone_number = t.phone_number
 -- MAGIC %md
 -- MAGIC ## Gold: 
 -- MAGIC
--- MAGIC * `transcripts_gold`
--- MAGIC   * Aggregate transcripts by policy_no so it is in one conversation
--- MAGIC   * Join policy using `policy_number` to enrich meta-data
--- MAGIC   * Perform NLP analysis with **Databricks AI Functions**
--- MAGIC     * `ai_analyze_sentiment()`
--- MAGIC     * `ai_summarize()`
--- MAGIC     * `ai_classify()` 
+-- MAGIC `transcripts_gold`
+-- MAGIC * Perform analysis with **Databricks AI Functions**
+-- MAGIC   * `ai_analyze_sentiment()`
+-- MAGIC   * `ai_summarize()`
+-- MAGIC   * `ai_query()`
+-- MAGIC * Analysis
+-- MAGIC   * Customer Satisfaction
+-- MAGIC   * Customer Service Operator compliance
+-- MAGIC   * Customer intent capture
+-- MAGIC   * Next best action analysis
+-- MAGIC   * Frequently asked policies
 
 -- COMMAND ----------
 
 CREATE OR REFRESH MATERIALIZED VIEW call_center_transcripts_analysis_gold
-COMMENT "createn enriched transcript table with meta data from policy"
+COMMENT "perform analysis using AI Functions to enrich the data from analytic dashboard"
 AS 
 SELECT
   operator_id,
@@ -122,39 +127,54 @@ SELECT
   last_name,
   email,
   phone_number,
-  to_timestamp(call_timestamp, 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'') as call_timestamp,  
-  ai_summarize(
-    transcript,
-    300
+  to_timestamp(call_timestamp, 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'') as call_timestamp,
+  call_duration_in_sec,
+  case when call_duration_in_sec > 480 then 'exceed_time_limit' else 'within_time_limit' end as call_time_limit,
+  -- summarization
+  ai_query(
+    "databricks-meta-llama-3-3-70b-instruct",
+    concat("Summary this transcript: ", transcript, "in less than 100 words")
   ) as summary,
+  -- sentiment
   ai_analyze_sentiment(
     transcript
   ) as sentiment,
+  -- compliance analysis
+  ai_query(
+    "databricks-claude-3-7-sonnet",
+    concat("Using the following 5 guidelines:", (select guidelines from call_center_guidelines),
+          "to identify the violations from the customer service operators based on the following transrcipt:",
+          "<transcript>", transcript, "</transcript>\n",
+          "each violation on a guideline count as 1 violation and max number of violations is 5",
+          "each operator starts with 10 points, deduct 1 point for each violations",
+          "give justifaction for each violation reference to the guidelines using bullet points 'e.g. - violate guideline #: '",
+          "return in a json {'points': INT, 'justification': STRING} without any Markdown formatting", 
+          "do not explain"
+          ),
+    returnType => 'STRUCT<points:INT, justification:STRING>'
+    ) as compliance_score,
+  -- Intent classification
   ai_query(
       "databricks-meta-llama-3-3-70b-instruct",
       "extract the customer intent (of either 'auto accident', 'home accident', 'motocycle', or 'policy related') and
       key context of the intent from the transcript:" || transcript,
-      responseFormat => 'STRUCT<intent_analysis:STRUCT<intent:STRING, context:STRING>>',
-      failOnError => false
-  ) as intent_analysis,
+      responseFormat => 'STRUCT<intent_analysis:STRUCT<intent:STRING, context:STRING>>'
+  ) as customer_intent,
+  -- Next Best Action Recommendation
   ai_query(
       "databricks-meta-llama-3-3-70b-instruct",
-      concat("You are an expert in insurance operation, flag any mistconduct: (in the catagory of 'rudeness', 'discrimination', 'data overreach')",
-      " for the following transcript: <transcript>", transcript, "<transcript>\n",
-      "Answer with the catagory of the mistconduct, do not explain. ", 
-      "If there is no mistconduct, reply with 'none', and answer a flag as a boolean"),
-      responseFormat => 'STRUCT<misconduct_analysis:STRUCT<catagory:ARRAY<STRING>, flag:BOOLEAN>>',
-      failOnError => false
-    ) as misconduct_analysis,
-  ai_query(
-      "databricks-meta-llama-3-3-70b-instruct",
-      concat("You are an expert in customer relationship management, analysis the following transcript: ", "<transcript>", transcript, "<transcript>\n",
+      concat("You are an expert in customer relationship management, analysis the following transcript: ", "<transcript>", transcript, "</transcript>\n",
       "give a recommendation of the next best action from the following list of choices: ", 
       "'follow-up call', 'promotional email', 'automated email', 'apology email'",
       "Answer with one recommended action, do not explain. If no action is required, return 'none'."
       "Answer with a succinct justificaction of the recommendation in less than 5 words "),
-      responseFormat => 'STRUCT<recommendation:STRUCT<catagory:STRING, justification:STRING>>',
-      failOnError => false
+      responseFormat => 'STRUCT<recommendation:STRUCT<catagory:STRING, justification:STRING>>'
     ) as next_best_action,
+  -- Customer asks
+  ai_query(
+     "databricks-claude-3-7-sonnet",
+     concat("Analysis the following transcripts: ", "<transcript>", transcript, "<transcript>\n",
+          "identify the main question and concerns from the customer in one sentence")
+  ) AS customer_asks,
   transcript
 FROM live.call_center_transcripts_cleaned;
