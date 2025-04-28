@@ -98,6 +98,7 @@ def create_tool_calling_agent(
         preprocessor = RunnableLambda(lambda state: state["messages"])
     model_runnable = preprocessor | model
 
+
     def call_model(
         state: ChatAgentState,
         config: RunnableConfig,
