@@ -1,17 +1,23 @@
--- Databricks notebook source
--- MAGIC %md
--- MAGIC # This Notebook will Perform
--- MAGIC
--- MAGIC 1. Create a Table Called `call_center_transcripts_analysis` from the DLT materialized view `call_center_transcripts_analysis_gold`
--- MAGIC 2. Show how you can build a databricks dashboard on top of the table
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # This Notebook will Perform
+# MAGIC
+# MAGIC 1. Create a Table Called `call_center_transcripts_analysis` from the DLT materialized view `call_center_transcripts_analysis_gold`
+# MAGIC 2. Show how you can build a databricks dashboard on top of the table
 
--- COMMAND ----------
+# COMMAND ----------
 
-USE CATALOG fins_genai;
-USE SCHEMA call_center;
+# MAGIC %run ./config
 
--- COMMAND ----------
+# COMMAND ----------
 
+spark.sql(f"USE CATALOG {catalog};")
+spark.sql(f"USE SCHEMA {schema};")
+
+# COMMAND ----------
+
+vs_index = f"{catalog}.{schema}.policy_docs_chunked_files_vs_index"
+SQL_statement = f"""
 CREATE OR REPLACE TABLE fins_genai.call_center.call_center_transcripts_analysis
 AS 
 with processed_analysis as (
@@ -60,7 +66,7 @@ processed_analysis_enrich as (
         *
       from
         vector_search(
-          index => "fins_genai.call_center.policy_docs_chunked_files_vs_index",
+          index => '{vs_index}',
           query_text => pa.customer_asks,
           num_results => 1
         )
@@ -108,18 +114,22 @@ select
   related_policy_doc_section,
   transcript
 from processed_analysis_enrich
+"""
+spark.sql(SQL_statement)
 
--- COMMAND ----------
+# COMMAND ----------
 
-select
-  *
-from fins_genai.call_center.call_center_transcripts_analysis
+# MAGIC %sql
+# MAGIC select
+# MAGIC   *
+# MAGIC from fins_genai.call_center.call_center_transcripts_analysis
+# MAGIC limit 5;
 
--- COMMAND ----------
+# COMMAND ----------
 
--- MAGIC %md
--- MAGIC ## Now you can build a dashboard based on `call_center_transcripts_analysis`
--- MAGIC
--- MAGIC To build a dashboard, please review [Dashboard Document](https://docs.databricks.com/aws/en/dashboards/)
--- MAGIC
--- MAGIC Check out the example dashboard (./call_center_transcripts_dashboard.lvdash.json)
+# MAGIC %md
+# MAGIC ## Now you can build a dashboard based on `call_center_transcripts_analysis`
+# MAGIC
+# MAGIC To build a dashboard, please review [Dashboard Document](https://docs.databricks.com/aws/en/dashboards/)
+# MAGIC
+# MAGIC Check out the example dashboard (./call_center_transcripts_dashboard.lvdash.json)

@@ -26,7 +26,7 @@ CREATE OR REFRESH STREAMING TABLE raw_policies
 COMMENT "Policy data loaded from csv files."
 AS 
 SELECT * FROM cloud_files(
-    "/Volumes/fins_genai/call_center/volume_policies/policies/",
+    ${volume_folder_policies},
     'json',
     map("mode", 'PERMISSIVE')
 )
@@ -37,7 +37,7 @@ CREATE OR REFRESH STREAMING TABLE raw_transcripts
 COMMENT "Transcript data loaded from json files."
 AS 
 SELECT * FROM cloud_files(
-    "/Volumes/fins_genai/call_center/volume_transcripts/transcripts_json_data/",
+    ${volume_folder_transcripts},
     'json',
     map("mode", 'PERMISSIVE')
 )
