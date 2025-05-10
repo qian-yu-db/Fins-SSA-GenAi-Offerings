@@ -1,0 +1,20 @@
+{
+  "name": "DLT-Process-Call-Transcripts-with-AI-Functions",
+  "libraries": [
+    {
+      "notebook": {
+        "path": "/Workspace/Users/q.yu@databricks.com/Fins-SSA-GenAi-Offerings/insurance_call_center_AI_system/01-DLT-Process-Call-Transcripts-with-AI-Functions"
+      }
+    }
+  ],
+  "catalog": "fins_genai",
+  "schema": "call_center",
+  "configuration": {
+    "volume_folder_transcripts": "/Volumes/fins_genai/call_center/volume_transcripts/transcripts_json_data",
+    "volume_path_policies": "/Volumes/fins_genai/call_center/volume_policies/policies"
+  },
+  "continuous": false,
+  "photon": true,
+  "channel": "preview",
+  "serverless": true
+}

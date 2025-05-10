@@ -116,4 +116,39 @@ else:
 
 # MAGIC %md
 # MAGIC
+# MAGIC ## Create DLT Pipeline Config (JSON)
+# MAGIC
+# MAGIC To create a DLT pipeline use the JSON config file, go to `Pipelines` -> `Create` -> `ETL pipeline` -> `JSON` interface -> replace the fields from the JSON file.
+# MAGIC
+# MAGIC **Note**: do not replace the fields that is not in the JSON config such as `budget_policy_id`
+
+# COMMAND ----------
+
+import os
+import json
+current_path = os.getcwd()
+DLT_notebook_path = f"{current_path}/01-DLT-Process-Call-Transcripts-with-AI-Functions"
+
+DLT_config = {}
+DLT_config['name'] = "DLT-Process-Call-Transcripts-with-AI-Functions"
+DLT_config['libraries'] = [{"notebook": {"path": DLT_notebook_path}}]
+DLT_config['catalog'] = catalog
+DLT_config['schema'] = schema
+DLT_config["configuration"] = {
+    'volume_folder_transcripts': f"{volume_folder_speech}/{transcript_sub}",
+    'volume_path_policies': f"{volume_folder_policy}/{policy_sub}"
+}
+DLT_config["continuous"] = False
+DLT_config['photon'] = True 
+DLT_config['channel'] = "preview"
+DLT_config['serverless'] = True
+
+print(f"DLT config:\n==============\n{json.dumps(DLT_config, indent=2)}")
+with open(f"{current_path}/DLT_config.json", "w") as json_file:
+    json.dump(DLT_config, json_file, indent=2)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
 # MAGIC Next Step: Create a DLT Pipeline with [Notebook 01-DLT-Tanscript-Policy]($./01-DLT-Transcript-Policy)
