@@ -1,0 +1,27 @@
+[project]
+name = "fins-ssa-genai-offerings"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic[email]>=2.11.3",
+    "pydantic-settings>=2.9.1",
+    "python-dotenv>=1.1.0",
+    "langchain>=0.3.24",
+    "langgraph<0.3.0",
+    "openai>=1.76.0",
+    "pandas>=2.2.3",
+    "numpy>=1.26.4",
+    "fastapi>=0.115.12",
+    "mlflow>=2.22.0",
+    "databricks-langchain>=0.4.2",
+    "databricks-agents>=0.20.1",
+    "databricks-sdk>=0.50.0",
+    "unitycatalog-langchain[databricks]>=0.2.0",
+    "databricks-connect>=16.1.4",
+    "pyspark>=3.5.5",
+    "notebook>=7.4.1",
+    "ipykernel>=6.29.5",
+    "pydub>=0.25.1",
+    "gradio>=5.27.1",
+    "databricks-sql-connector>=4.0.3",
+]
