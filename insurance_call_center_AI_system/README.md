@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![image](../imgs/insurance_operator_ai_agents_system.png)
+![image](../imgs/call_center_architecture.png)
 
 In this PoC accelerator, we will demonstrate how to build an multi-agent AI system to automate the 
 operation of an insurance call center. The system will be able to perform the following tasks:
