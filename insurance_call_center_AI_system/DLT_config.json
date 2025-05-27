@@ -11,7 +11,7 @@
   "schema": "call_center",
   "configuration": {
     "volume_folder_transcripts": "/Volumes/fins_genai/call_center/volume_transcripts/transcripts_json_data",
-    "volume_path_policies": "/Volumes/fins_genai/call_center/volume_policies/policies"
+    "volume_folder_policies": "/Volumes/fins_genai/call_center/volume_policies/policies"
   },
   "continuous": false,
   "photon": true,
