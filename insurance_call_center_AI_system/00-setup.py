@@ -35,6 +35,7 @@ spark.sql(f'CREATE VOLUME IF NOT EXISTS {volume_name_policies};')
 volume_folder_policy = f"/Volumes/{catalog}/{schema}/{volume_name_policies}"
 volume_folder_speech = f"/Volumes/{catalog}/{schema}/{volume_name_transcripts}"
 policy_sub = "policies"
+guideline_sub = "guidelines"
 policy_doc_sub = "policy_doc"
 transcript_sub = "transcripts_json_data"
 
@@ -46,6 +47,7 @@ if reset_all_data:
         dbutils.fs.rm(f'{volume_folder_speech}', True)
         spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.raw_policies;")
         spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.raw_transcripts;")
+        spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.call_center_guidelines;")
         spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.call_center_transcripts_cleaned;")
         spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.call_center_transcripts_analysis_gold;")
     except Exception as e:
@@ -96,6 +98,7 @@ repo_name = 'Fins-SSA-GenAi-Offerings'
 
 if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or \
     is_folder_empty(f"{volume_folder_policy}/{policy_doc_sub}") or \
+    is_folder_empty(f"{volume_folder_policy}/{guideline_sub}") or \
     is_folder_empty(f"{volume_folder_speech}/{transcript_sub}"):
     download_file_from_git(dest=f'{volume_folder_policy}/{policy_sub}', 
                            owner=repo_owner, 
@@ -105,12 +108,27 @@ if is_folder_empty(f"{volume_folder_policy}/{policy_sub}") or \
                            owner=repo_owner, 
                            repo=repo_name, 
                            path="/datasets/insurance_policy_doc")
+    download_file_from_git(dest=f'{volume_folder_policy}/{guideline_sub}', 
+                           owner=repo_owner, 
+                           repo=repo_name, 
+                           path="/datasets/call_center_guidelines")
     download_file_from_git(dest=f'{volume_folder_speech}/{transcript_sub}', 
                            owner=repo_owner, 
                            repo=repo_name, 
                            path="/datasets/call_center_audio_transcripts")
 else:
     print("Data already existing. To clean up, run above cell with reset_all_date=True.")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC # Create the Guideline Table
+
+# COMMAND ----------
+
+df_guideline = spark.read.json(f"{volume_folder_policy}/{guideline_sub}")
+df_guideline.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.call_center_guidelines")
+print(f"Created table {catalog}.{schema}.call_center_guidelines")
 
 # COMMAND ----------
 
@@ -136,7 +154,7 @@ DLT_config['catalog'] = catalog
 DLT_config['schema'] = schema
 DLT_config["configuration"] = {
     'volume_folder_transcripts': f"{volume_folder_speech}/{transcript_sub}",
-    'volume_path_policies': f"{volume_folder_policy}/{policy_sub}"
+    'volume_folder_policies': f"{volume_folder_policy}/{policy_sub}"
 }
 DLT_config["continuous"] = False
 DLT_config['photon'] = True 
@@ -144,8 +162,9 @@ DLT_config['channel'] = "preview"
 DLT_config['serverless'] = True
 
 print(f"DLT config:\n==============\n{json.dumps(DLT_config, indent=2)}")
+print(f"Saving DLT config to {current_path}/DLT_config.json")
 with open(f"{current_path}/DLT_config.json", "w") as json_file:
-    json.dump(DLT_config, json_file, indent=2)
+    json.dump(DLT_config, json_file, indent=4)
 
 # COMMAND ----------
 
